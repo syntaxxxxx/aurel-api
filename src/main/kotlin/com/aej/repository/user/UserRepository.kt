@@ -7,5 +7,5 @@ interface UserRepository {
     suspend fun updateUser(user: User): User
     suspend fun getUserCount(): Long
     suspend fun deleteUser(id: String): Boolean
-    suspend fun updateFcmToken(id: String, fcmToken: String): User
+    suspend fun updateFcmTokenAndServerKey(id: String, fcmToken: String, fcmServerKey: String): User
 }

@@ -40,9 +40,10 @@ class UserRepositoryImpl : UserRepository {
         return true
     }
 
-    override suspend fun updateFcmToken(id: String, fcmToken: String): User {
+    override suspend fun updateFcmTokenAndServerKey(id: String, fcmToken: String, fcmServerKey: String): User {
         val currentUser = getUser(id)
         currentUser.fcmToken = fcmToken
+        currentUser.fcmServerKey = fcmServerKey
         return updateUser(currentUser)
     }
 }

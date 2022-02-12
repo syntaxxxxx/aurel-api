@@ -13,7 +13,8 @@ data class User(
     var name: String = "",
     var password: String = "",
     var role: Role = Role.CUSTOMER,
-    var fcmToken: String = ""
+    var fcmToken: String = "",
+    var fcmServerKey: String = ""
 ) {
 
     fun generateId(): User {

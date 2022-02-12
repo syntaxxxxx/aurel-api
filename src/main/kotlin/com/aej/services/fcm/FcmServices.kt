@@ -10,16 +10,14 @@ import io.ktor.client.request.*
 import io.ktor.http.*
 
 object FcmServices {
-    private val SERVER_KEY = System.getenv("FCM_SERVER_KEY")
     private const val BASE_URL = "https://fcm.googleapis.com/fcm/send"
-
     private val client = KoinContainer.httpClient
 
     suspend fun createNotification(user: User, fcmData: FcmData): FcmResponse {
         println("fcm notification - create notif....")
         val response = client.post(BASE_URL) {
             contentType(ContentType.Application.Json)
-            header("Authorization", "key=$SERVER_KEY")
+            header("Authorization", "key=${user.fcmServerKey}")
             val body = FcmBody(
                 to = user.fcmToken,
                 data = fcmData
