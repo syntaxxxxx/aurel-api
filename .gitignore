@@ -1,3 +1,7 @@
-
-# firebase admin
-src/main/resources/firebase-admin.jsonmerchant/
+/.gradle
+/.idea
+/out
+/build
+*.iml
+*.ipr
+*.iws
