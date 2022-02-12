@@ -15,6 +15,7 @@ object FcmServices {
 
     suspend fun createNotification(user: User, fcmData: FcmData): FcmResponse {
         println("fcm notification - create notif....")
+        println("asuuu -> $user")
         val response = client.post(BASE_URL) {
             contentType(ContentType.Application.Json)
             header("Authorization", "key=${user.fcmServerKey}")
