@@ -16,6 +16,7 @@ fun Application.configureRoutingV1() {
 
                 basicAuth {
                     get { UserRouteScreen.getUser(call) }
+                    post("/fcm") { UserRouteScreen.updateFcmToken(call) }
                 }
             }
 

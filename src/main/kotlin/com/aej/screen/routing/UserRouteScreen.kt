@@ -5,6 +5,7 @@ import com.aej.MainException
 import com.aej.repository.cart.Cart
 import com.aej.screen.response.MainResponse
 import com.aej.repository.user.User
+import com.aej.screen.request.UserFcmTokenRequest
 import com.aej.screen.request.UserRequest
 import com.aej.utils.AESUtils
 import com.aej.utils.mapToResponse
@@ -38,8 +39,6 @@ object UserRouteScreen {
 
         val passwordRequest = userRequest.password
         val passwordDb = AESUtils.decrypt(user.password).replace("\"", "")
-        println("pass req -> $passwordRequest")
-        println("pass db -> $passwordDb")
 
         if (passwordRequest != passwordDb) throw MainException("Password invalid!", HttpStatusCode.Unauthorized)
 
@@ -58,5 +57,13 @@ object UserRouteScreen {
             val user = User.fromToken(request, userRepository).mapToResponse()
             respond(MainResponse.bindToResponse(user, "User"))
         }
+    }
+
+    suspend fun updateFcmToken(applicationCall: ApplicationCall) = applicationCall.run {
+        val fcmRequest = receive<UserFcmTokenRequest>()
+        val user = User.fromToken(request, userRepository)
+        user.fcmToken = fcmRequest.fcmToken
+        userRepository.updateUser(user)
+        respond(MainResponse.bindToResponse(user.mapToResponse(), "Update fcm token"))
     }
 }

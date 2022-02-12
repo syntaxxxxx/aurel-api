@@ -11,7 +11,7 @@ import io.ktor.http.*
 
 object PaymentServices {
 
-    val XENDIT_API_KEY = System.getenv("XENDIT_API")
+    val XENDIT_API_KEY: String = System.getenv("XENDIT_API")
 
     suspend inline fun <reified T, reified U>xenditPost(url: String, body: U): T {
         val client = KoinContainer.httpClient

@@ -3,35 +3,40 @@ package com.aej.plugins.routing
 import com.aej.KoinContainer
 import com.aej.repository.transaction.Transaction
 import com.aej.screen.response.MainResponse
+import com.aej.services.fcm.request.FcmData
+import com.aej.services.fcm.FcmServices
 import com.aej.services.image.ImageStorageServices
 import com.aej.services.payment.merchant.callback.MerchantPaidData
 import com.aej.services.payment.va.callback.VaCreatedData
 import com.aej.services.payment.va.callback.VaPaidData
-import com.google.gson.GsonBuilder
-import com.google.gson.reflect.TypeToken
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import kotlinx.coroutines.runBlocking
 
 fun Application.configureRouting() {
     val paymentRepository = KoinContainer.paymentRepository
     val transactionRepository = KoinContainer.transactionRepository
+    val userRepository = KoinContainer.userRepository
 
-    val paidConfirmed: (externalId: String) -> Unit = {
-        runBlocking {
-            paymentRepository.confirmedPaidPayment(it)
-            val payment = paymentRepository.getPaymentByExternalId(it)
+    val paidConfirmed: suspend (externalId: String) -> Unit = {
+        paymentRepository.confirmedPaidPayment(it)
+        val payment = paymentRepository.getPaymentByExternalId(it)
 
-            val transaction = transactionRepository.getTransaction(payment.transactionId).apply {
-                statusTransaction = Transaction.StatusTransaction.PROCESS
-                paymentTransaction.statusPayment = payment.statusPayment
-            }
-            transactionRepository.updateTransaction(transaction.id, transaction)
+        val transaction = transactionRepository.getTransaction(payment.transactionId).apply {
+            statusTransaction = Transaction.StatusTransaction.PROCESS
+            paymentTransaction.statusPayment = payment.statusPayment
         }
+        val user = userRepository.getUser(transaction.customerId)
+
+        val fcmData = FcmData(
+            type = "transaction",
+            externalId = transaction.id
+        )
+        FcmServices.createNotification(user, fcmData)
+        transactionRepository.updateTransaction(transaction.id, transaction)
     }
 
     routing {
@@ -68,6 +73,8 @@ fun Application.configureRouting() {
                     post("/paid") {
                         if (isXenditCallback(call)) {
                             val responseBody = call.receive<VaPaidData>()
+                            println("body -> $responseBody")
+                            println("fcm notification incoming body -> $responseBody")
                             paidConfirmed.invoke(responseBody.externalId)
                             call.respond(MainResponse.bindToResponse(responseBody, "Va paid"))
                         }
