@@ -3,6 +3,7 @@ package com.aej.screen.routing
 import com.aej.KoinContainer
 import com.aej.MainException
 import com.aej.repository.payment.Payment
+import com.aej.repository.payment.PaymentType
 import com.aej.repository.transaction.Transaction
 import com.aej.repository.user.User
 import com.aej.screen.response.MainResponse
@@ -35,6 +36,37 @@ object TransactionRouteScreen {
         if (!method.isActivated) throw MainException("Payment method is inactive!")
 
         val transactions = Transaction.of(cart, Transaction.PaymentTransaction.init(paymentParameter))
+
+        // validation amount with method
+        transactions.forEach { transaction ->
+            val isMerchant = method.paymentType == PaymentType.MERCHANT
+            val isVa = method.paymentType == PaymentType.VA
+            val isVaBCA = method.code.contains("BCA")
+
+            when {
+                isMerchant -> {
+                    val maxAmount: Long = 5000000
+                    if (transaction.amount > maxAmount) {
+                        throw MainException(
+                            "Expected amount cannot be more than 5000000 with merchant method",
+                            HttpStatusCode.Forbidden
+                        )
+                    }
+                }
+                isVa -> {
+                    if (isVaBCA) {
+                        val minAmount = 10000
+                        if (transaction.amount < minAmount) {
+                            throw MainException(
+                                "Minimal amount must be more than 10000 with BCA-VA method",
+                                HttpStatusCode.Forbidden
+                            )
+                        }
+                    }
+                }
+            }
+        }
+
         transactionRepository.createTransactions(transactions)
 
         val currentTransaction = transactions.firstOrNull()
