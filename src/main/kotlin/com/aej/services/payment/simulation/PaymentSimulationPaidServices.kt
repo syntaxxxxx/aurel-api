@@ -7,6 +7,7 @@ import com.aej.services.payment.simulation.request.SimulationPaidBody
 import com.aej.services.payment.simulation.request.merchant.MerchantSimulationPaidBody
 import com.aej.services.payment.simulation.request.va.VaSimulationPaidBody
 import com.aej.services.payment.simulation.response.SimulationPaidResponse
+import com.aej.utils.removeMerchantSuffix
 import io.ktor.http.*
 
 object PaymentSimulationPaidServices {
@@ -31,7 +32,7 @@ object PaymentSimulationPaidServices {
                 createPaidVaSimulation(vaRequestBody, requestBody.referenceId)
             }
             method.contains(Payment.Suffix.MERCHANT) -> {
-                val outletName = Payment.codeMerchantOf(method)
+                val outletName = method.removeMerchantSuffix()
                 val merchantRequestBody = MerchantSimulationPaidBody(
                     paymentCode = requestBody.referenceId,
                     transferAmount = requestBody.amount,
