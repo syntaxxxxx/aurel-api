@@ -5,6 +5,7 @@ import com.aej.repository.transaction.Transaction
 import com.aej.screen.response.MainResponse
 import com.aej.services.fcm.request.FcmData
 import com.aej.services.fcm.FcmServices
+import com.aej.services.fcm.response.FcmResponse
 import com.aej.services.image.ImageStorageServices
 import com.aej.services.payment.merchant.callback.MerchantPaidData
 import com.aej.services.payment.va.callback.VaCreatedData
@@ -21,7 +22,7 @@ fun Application.configureRouting() {
     val transactionRepository = KoinContainer.transactionRepository
     val userRepository = KoinContainer.userRepository
 
-    val paidConfirmed: suspend (externalId: String) -> Unit = {
+    val paidConfirmed: suspend (externalId: String) -> FcmResponse = {
         paymentRepository.confirmedPaidPayment(it)
         val payment = paymentRepository.getPaymentByExternalId(it)
 
@@ -35,8 +36,8 @@ fun Application.configureRouting() {
             type = "transaction",
             externalId = transaction.id
         )
-        FcmServices.createNotification(user, fcmData)
         transactionRepository.updateTransaction(transaction.id, transaction)
+        FcmServices.createNotification(user, fcmData)
     }
 
     routing {
@@ -75,8 +76,12 @@ fun Application.configureRouting() {
                             val responseBody = call.receive<VaPaidData>()
                             println("body -> $responseBody")
                             println("fcm notification incoming body -> $responseBody")
-                            paidConfirmed.invoke(responseBody.externalId)
-                            call.respond(MainResponse.bindToResponse(responseBody, "Va paid"))
+                            val fcmResult = paidConfirmed.invoke(responseBody.externalId)
+                            val data = mapOf(
+                                "fcm_result" to fcmResult,
+                                "payload" to responseBody
+                            )
+                            call.respond(MainResponse.bindToResponse(data, "Va paid"))
                         }
                     }
                 }
@@ -85,8 +90,12 @@ fun Application.configureRouting() {
                     post("/paid") {
                         if (isXenditCallback(call)) {
                             val responseBody = call.receive<MerchantPaidData>()
-                            paidConfirmed.invoke(responseBody.externalId)
-                            call.respond(MainResponse.bindToResponse(responseBody, "Merchant paid"))
+                            val fcmResult = paidConfirmed.invoke(responseBody.externalId)
+                            val data = mapOf(
+                                "fcm_result" to fcmResult,
+                                "payload" to responseBody
+                            )
+                            call.respond(MainResponse.bindToResponse(data, "Merchant paid"))
                         }
                     }
                 }
