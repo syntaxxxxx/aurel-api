@@ -13,7 +13,7 @@ import io.ktor.http.*
 object PaymentSimulationPaidServices {
 
     private const val EXTERNAL_ID = "externalId"
-    private const val URL_VA_PAY_SIMULATION = "https://api.xendit.co/callback_virtual_accounts/external_id={$EXTERNAL_ID}/simulate_payment"
+    private const val URL_VA_PAY_SIMULATION = "https://api.xendit.co/callback_virtual_accounts/external_id=$EXTERNAL_ID/simulate_payment"
     private const val URL_MERCHANT_PAY_SIMULATION = "https://api.xendit.co/fixed_payment_code/simulate_payment"
 
     private suspend fun createPaidVaSimulation(requestBody: VaSimulationPaidBody, referenceId: String): SimulationPaidResponse {
