@@ -4,6 +4,7 @@ import com.aej.KoinContainer
 import com.aej.services.payment.merchant.PaymentMerchantApi
 import com.aej.services.payment.merchant.request.MerchantRequestBody
 import com.aej.services.payment.va.PaymentVaApi
+import com.aej.services.payment.simulation.request.va.VaSimulationPaidBody
 import com.aej.services.payment.va.request.VaRequestBody
 import io.ktor.client.call.*
 import io.ktor.client.request.*

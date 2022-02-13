@@ -7,9 +7,14 @@ import com.aej.services.fcm.request.FcmData
 import com.aej.services.fcm.FcmServices
 import com.aej.services.fcm.response.FcmResponse
 import com.aej.services.image.ImageStorageServices
+import com.aej.services.payment.PaymentServices
 import com.aej.services.payment.merchant.callback.MerchantPaidData
+import com.aej.services.payment.simulation.PaymentSimulationPaidServices
+import com.aej.services.payment.simulation.request.SimulationPaidBody
 import com.aej.services.payment.va.callback.VaCreatedData
 import com.aej.services.payment.va.callback.VaPaidData
+import com.aej.services.payment.simulation.request.va.VaSimulationPaidBody
+import com.aej.utils.orNol
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
@@ -28,7 +33,7 @@ fun Application.configureRouting() {
 
         val transaction = transactionRepository.getTransaction(payment.transactionId).apply {
             statusTransaction = Transaction.StatusTransaction.PROCESS
-            paymentTransaction.statusPayment = payment.statusPayment
+            paymentTransaction.statusPayment = payment.status
         }
         val user = userRepository.getUser(transaction.customerId)
 
@@ -63,7 +68,7 @@ fun Application.configureRouting() {
 
                             val transaction = transactionRepository.getTransaction(payment.transactionId).apply {
                                 statusTransaction = Transaction.StatusTransaction.WAITING
-                                paymentTransaction.statusPayment = payment.statusPayment
+                                paymentTransaction.statusPayment = payment.status
                             }
                             transactionRepository.updateTransaction(transaction.id, transaction)
 
@@ -98,6 +103,31 @@ fun Application.configureRouting() {
                             call.respond(MainResponse.bindToResponse(data, "Merchant paid"))
                         }
                     }
+                }
+            }
+
+            route("/simulation") {
+                post("/va") {
+                    val referenceId = call.parameters["reference_id"].orEmpty()
+                    val amount = call.parameters["amount"]?.toLongOrNull().orNol()
+                    val requestBody = SimulationPaidBody(referenceId, amount)
+                    val payment = paymentRepository.getPaymentByExternalId(referenceId)
+
+                    println("request body ---> $requestBody")
+                    val data = PaymentSimulationPaidServices.createPaidSimulation(requestBody, payment.method)
+                    call.respond(MainResponse.bindToResponse(data, "Create virtual account paid simulation"))
+                }
+
+                post("/merchant") {
+                    val referenceId = call.parameters["reference_id"].orEmpty()
+                    val amount = call.parameters["amount"]?.toLongOrNull().orNol()
+                    val payment = paymentRepository.getPaymentByExternalId(referenceId)
+                    val codePayment = payment.externalData?.data.orEmpty()
+                    val requestBody = SimulationPaidBody(codePayment, amount)
+
+                    println("request body ---> $requestBody")
+                    val data = PaymentSimulationPaidServices.createPaidSimulation(requestBody, payment.method)
+                    call.respond(MainResponse.bindToResponse(data, "Create merchant paid simulation"))
                 }
             }
         }

@@ -38,13 +38,13 @@ class PaymentRepositoryImpl : PaymentRepository {
 
     override suspend fun confirmedCreatedPayment(externalId: String) {
         val payment = collection.findOne(Payment::referenceId eq externalId).orThrow()
-        payment.statusPayment = Transaction.StatusPayment.PENDING
+        payment.status = Transaction.StatusPayment.PENDING
         updatePayment(payment)
     }
 
     override suspend fun confirmedPaidPayment(externalId: String) {
         val payment = collection.findOne(Payment::referenceId eq externalId).orThrow()
-        payment.statusPayment = Transaction.StatusPayment.SUCCESS
+        payment.status = Transaction.StatusPayment.SUCCESS
         updatePayment(payment)
     }
 }

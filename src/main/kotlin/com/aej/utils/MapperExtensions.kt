@@ -1,6 +1,5 @@
 package com.aej.utils
 
-import com.aej.KoinContainer
 import com.aej.repository.cart.Cart
 import com.aej.repository.payment.Payment
 import com.aej.repository.product.Product
@@ -55,8 +54,9 @@ fun Payment.mapToResponse(): PaymentResponse {
         id = id,
         ownerId = ownerId,
         amount = amount,
-        status = statusPayment.name,
-        paymentType = paymentType.name,
+        status = status.name,
+        type = type.name,
+        method = method,
         referenceId = referenceId,
         transactionId = transactionId,
         externalData = externalData,

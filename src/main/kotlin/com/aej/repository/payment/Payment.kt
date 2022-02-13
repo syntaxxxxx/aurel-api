@@ -10,8 +10,9 @@ data class Payment(
     var ownerId: String = "",
     var transactionId: String = "",
     var amount: Long = 0,
-    var statusPayment: Transaction.StatusPayment = Transaction.StatusPayment.WAITING,
-    var paymentType: PaymentType = PaymentType.VA,
+    var status: Transaction.StatusPayment = Transaction.StatusPayment.WAITING,
+    var type: PaymentType = PaymentType.VA,
+    var method: String = "",
     var referenceId: String = "",
     var externalData: ExternalData? = null,
     var expirationDate: String = ""
@@ -34,8 +35,9 @@ data class Payment(
                 ownerId = user.id,
                 transactionId = transaction.id,
                 amount = transaction.amount,
-                statusPayment = Transaction.StatusPayment.WAITING,
-                paymentType = paymentType,
+                status = Transaction.StatusPayment.WAITING,
+                type = paymentType,
+                method = transaction.paymentTransaction.method,
                 referenceId = referenceId
             )
         }

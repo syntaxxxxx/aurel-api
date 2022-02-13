@@ -47,10 +47,25 @@ object TransactionRouteScreen {
         respond(MainResponse.bindToResponse(groupTransaction, "Create transaction"))
     }
 
-    suspend fun getCurrentTransaction(applicationCall: ApplicationCall) = applicationCall.run {
+    suspend fun getUserTransaction(applicationCall: ApplicationCall) = applicationCall.run {
+        when (parameters.contains("transaction_id")) {
+            true -> getTransaction(this)
+            false -> getCurrentTransaction(this)
+        }
+    }
+
+    private suspend fun getCurrentTransaction(applicationCall: ApplicationCall) = applicationCall.run {
         val user = User.fromToken(request, userRepository)
         val cart = cartRepository.getCart(user.id)
         val transaction = transactionRepository.getCartTransaction(cart.id).map { it.mapToResponse() }
         respond(MainResponse.bindToResponse(transaction, "Get current transaction"))
+    }
+
+    private suspend fun getTransaction(applicationCall: ApplicationCall) = applicationCall.run {
+        val user = User.fromToken(request, userRepository)
+        val transactionId = parameters["transaction_id"].orEmpty()
+        val transaction = transactionRepository.getTransaction(transactionId).mapToResponse()
+        if (transaction.customerId != user.id) throw MainException("Transaction not found!", HttpStatusCode.BadRequest)
+        respond(MainResponse.bindToResponse(transaction, "Get transaction"))
     }
 }

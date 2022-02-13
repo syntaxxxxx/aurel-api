@@ -34,7 +34,7 @@ data class PaymentAvailableData(
                 PaymentAvailableData(
                     name = "Invoice",
                     code = "",
-                    isActivated = true,
+                    isActivated = false,
                     paymentType = PaymentType.INVOICE
                 )
             )

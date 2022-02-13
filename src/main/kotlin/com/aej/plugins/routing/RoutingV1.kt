@@ -35,7 +35,7 @@ fun Application.configureRoutingV1() {
                     }
 
                     route("/transaction") {
-                        get { TransactionRouteScreen.getCurrentTransaction(call) }
+                        get { TransactionRouteScreen.getUserTransaction(call) }
                         post { TransactionRouteScreen.createTransaction(call) }
                     }
 
@@ -43,7 +43,7 @@ fun Application.configureRoutingV1() {
                         basicAuth {
                             get("/method") { PaymentRouteScreen.getAllAvailableMethod(call) }
                             get("/all") { PaymentRouteScreen.getAllPayment(call) }
-                            get { PaymentRouteScreen.getCurrentPayment(call) }
+                            get { PaymentRouteScreen.getPayment(call) }
                             post { PaymentRouteScreen.createPayment(call) }
                         }
                     }

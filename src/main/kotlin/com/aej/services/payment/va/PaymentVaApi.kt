@@ -1,11 +1,12 @@
 package com.aej.services.payment.va
 
 import com.aej.MainException
-import com.aej.repository.payment.Payment
 import com.aej.services.payment.PaymentServices
+import com.aej.services.payment.simulation.request.va.VaSimulationPaidBody
 import com.aej.services.payment.va.request.VaRequestBody
 import com.aej.services.payment.va.response.VaBankListResponse
 import com.aej.services.payment.va.response.VaCreateResponse
+import com.aej.services.payment.simulation.response.SimulationPaidResponse
 import com.google.gson.Gson
 import com.google.gson.JsonParseException
 import com.google.gson.reflect.TypeToken
@@ -18,6 +19,8 @@ class PaymentVaApi {
     companion object {
         private const val URL_CREATED = "https://api.xendit.co/callback_virtual_accounts"
         private const val URL_LIST_BANK = "https://api.xendit.co/available_virtual_account_banks"
+
+        private const val EXTERNAL_ID = "externalId"
     }
 
     suspend fun createVa(requestBody: VaRequestBody): VaCreateResponse {
