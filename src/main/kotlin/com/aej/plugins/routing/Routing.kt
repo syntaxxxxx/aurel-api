@@ -108,8 +108,9 @@ fun Application.configureRouting() {
 
             route("/simulation") {
                 post("/va") {
-                    val referenceId = call.parameters["reference_id"].orEmpty()
-                    val amount = call.parameters["amount"]?.toLongOrNull().orNol()
+                    val body = call.receive<SimulationPaidBody>()
+                    val referenceId = body.referenceId
+                    val amount = body.amount
                     val requestBody = SimulationPaidBody(referenceId, amount)
                     val payment = paymentRepository.getPaymentByExternalId(referenceId)
 
@@ -119,8 +120,9 @@ fun Application.configureRouting() {
                 }
 
                 post("/merchant") {
-                    val referenceId = call.parameters["reference_id"].orEmpty()
-                    val amount = call.parameters["amount"]?.toLongOrNull().orNol()
+                    val body = call.receive<SimulationPaidBody>()
+                    val referenceId = body.referenceId
+                    val amount = body.amount
                     val payment = paymentRepository.getPaymentByExternalId(referenceId)
                     val codePayment = payment.externalData?.data.orEmpty()
                     val requestBody = SimulationPaidBody(codePayment, amount)
