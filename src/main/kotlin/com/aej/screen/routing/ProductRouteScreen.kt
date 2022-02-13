@@ -32,16 +32,7 @@ object ProductRouteScreen {
                 }
                 is PartData.FileItem -> {
                     val fileBytes = part.streamProvider().readBytes()
-
-                    val host = request.host()
-                    val port = request.port()
-                    val baseUrl = if (host != "0.0.0.0") {
-                        // prod
-                        "https://${host.removePrefix("https://")}"
-                    } else {
-                        // dev
-                        "http://$host:$port"
-                    }
+                    val baseUrl = "https://aurel-store.herokuapp.com"
 
                     val urlImage = ImageStorageServices.uploadFile(fileBytes, part.originalFileName.orRandom(), user.name, baseUrl)
                     product.imageUrl = urlImage
