@@ -15,7 +15,7 @@ fun Application.configureStatusPage() {
         status(HttpStatusCode.Unauthorized) { call, _ ->
             call.respond(
                 HttpStatusCode.Unauthorized,
-                MainResponse(
+                MainResponse<String>(
                     status = false,
                     code = HttpStatusCode.Unauthorized.value,
                     message = "Invalid token"
@@ -25,7 +25,7 @@ fun Application.configureStatusPage() {
         status(HttpStatusCode.NotFound) { call, _ ->
             call.respond(
                 HttpStatusCode.NotFound,
-                MainResponse(
+                MainResponse<String>(
                     status = false,
                     code = HttpStatusCode.NotFound.value,
                     message = "No route found, please check the documentation.."
@@ -35,7 +35,7 @@ fun Application.configureStatusPage() {
         exception<MainException> { call, cause ->
             call.respond(
                 cause.code,
-                MainResponse(
+                MainResponse<String>(
                     status = false,
                     code = cause.code.value,
                     message = cause.localizedMessage
@@ -45,7 +45,7 @@ fun Application.configureStatusPage() {
         exception<IllegalStateException> { call, cause ->
             call.respond(
                 HttpStatusCode.InternalServerError,
-                MainResponse(
+                MainResponse<String>(
                     status = false,
                     code = HttpStatusCode.InternalServerError.value,
                     message = cause.localizedMessage
@@ -55,7 +55,7 @@ fun Application.configureStatusPage() {
         exception<IllegalArgumentException> { call, cause ->
             call.respond(
                 HttpStatusCode.InternalServerError,
-                MainResponse(
+                MainResponse<String>(
                     status = false,
                     code = HttpStatusCode.InternalServerError.value,
                     message = cause.localizedMessage + ". Maybe try again"
@@ -65,7 +65,7 @@ fun Application.configureStatusPage() {
         exception<MongoCommandException> { call, cause ->
             call.respond(
                 HttpStatusCode.InternalServerError,
-                MainResponse(
+                MainResponse<String>(
                     status = false,
                     code = HttpStatusCode.InternalServerError.value,
                     message = cause.localizedMessage + ". Maybe try again"

@@ -9,7 +9,14 @@ import com.aej.screen.response.*
 import com.aej.services.payment.PaymentAvailableData
 
 fun User.mapToResponse(): UserResponse {
-    return UserResponse(id, name, role = role)
+    return UserResponse(
+        id = id,
+        name = name,
+        role = role,
+        imageUrl = imageUrl,
+        fullName = fullName,
+        simpleAddress = simpleAddress
+    )
 }
 
 fun Product.mapToResponse(): ProductResponse {

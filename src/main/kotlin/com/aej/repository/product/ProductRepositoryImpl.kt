@@ -99,4 +99,12 @@ class ProductRepositoryImpl : ProductRepository {
         return collection.find(Product::category eq category).toList()
     }
 
+    override suspend fun fixProduct() {
+        getAllProduct().forEach {
+            val newProd = it
+            newProd.imageUrl = newProd.imageUrl.replace("http://0.0.0.0:8081", "https://aurel-store.herokuapp.com")
+            updateProduct(newProd)
+        }
+    }
+
 }

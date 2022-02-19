@@ -7,9 +7,13 @@ import com.aej.screen.response.MainResponse
 import com.aej.repository.user.User
 import com.aej.screen.request.UserFcmTokenRequest
 import com.aej.screen.request.UserRequest
+import com.aej.screen.response.UserResponse
+import com.aej.services.image.ImageStorageServices
 import com.aej.utils.AESUtils
 import com.aej.utils.mapToResponse
+import com.aej.utils.orRandom
 import io.ktor.http.*
+import io.ktor.http.content.*
 import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
@@ -65,5 +69,34 @@ object UserRouteScreen {
         user.fcmToken = fcmRequest.fcmToken
         userRepository.updateUser(user)
         respond(MainResponse.bindToResponse(user.mapToResponse(), "Update fcm token"))
+    }
+
+    suspend fun updateProfileUser(applicationCall: ApplicationCall) = applicationCall.run {
+        val userRequest = receive<User>()
+        val user = User.fromToken(request, userRepository)
+        val userUpdated = user.updateWith(userRequest)
+        userRepository.updateUser(userUpdated)
+        val userFromDb = userRepository.getUser(user.id)
+        respond(MainResponse.bindToResponse(userFromDb.mapToResponse(), "Update profile"))
+    }
+
+    suspend fun updateImageProfile(applicationCall: ApplicationCall) = applicationCall.run {
+        val user = User.fromToken(request, userRepository)
+        receiveMultipart().readAllParts().onEach { part ->
+            when (part) {
+                is PartData.FileItem -> {
+                    val fileBytes = part.streamProvider().readBytes()
+                    val baseUrl = "https://aurel-store.herokuapp.com"
+
+                    val urlImage = ImageStorageServices.uploadFile(fileBytes, part.originalFileName.orRandom(), user.name, baseUrl)
+                    user.imageUrl = urlImage
+                }
+                else -> {}
+            }
+        }
+
+        userRepository.updateUser(user)
+        val userFromDb = userRepository.getUser(user.id)
+        respond(MainResponse.bindToResponse(userFromDb.mapToResponse(), "Update image profile"))
     }
 }

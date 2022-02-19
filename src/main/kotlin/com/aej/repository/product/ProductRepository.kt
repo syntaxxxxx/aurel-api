@@ -13,6 +13,7 @@ interface ProductRepository {
     suspend fun deleteProduct(id: String): Boolean
     suspend fun getCategory(): List<String>
     suspend fun getProductInCategory(category: String): List<Product>
+    suspend fun fixProduct()
 
     companion object {
         const val PER_PAGE = 4

@@ -6,6 +6,7 @@ import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import io.ktor.http.*
 import io.ktor.server.request.*
+import me.hana.docs.annotation.DocFieldDescription
 import java.util.*
 
 data class User(
@@ -13,6 +14,9 @@ data class User(
     var name: String = "",
     var password: String = "",
     var role: Role = Role.CUSTOMER,
+    var imageUrl: String = "",
+    var fullName: String = "",
+    var simpleAddress: String = "",
     var fcmToken: String = "",
     var fcmServerKey: String = ""
 ) {
@@ -33,6 +37,10 @@ data class User(
             )
             user.password = passwordHash
             return user
+        }
+
+        fun sampleRandom(): User {
+            return of("nadia", "Indonesia", Role.CUSTOMER)
         }
 
         fun getIdByName(name: String): String {
@@ -70,6 +78,26 @@ data class User(
 
             return user
         }
+    }
+
+    fun updateWith(updated: User): User {
+        if (updated.fullName.isNotEmpty()) {
+            fullName = updated.fullName
+        }
+
+        if (updated.simpleAddress.isNotEmpty()) {
+            simpleAddress = updated.simpleAddress
+        }
+
+        if (updated.imageUrl.isNotEmpty()) {
+            fullName = updated.imageUrl
+        }
+
+        if (updated.fcmToken.isNotEmpty()) {
+            fullName = updated.fcmToken
+        }
+
+        return this
     }
 
     enum class Role {

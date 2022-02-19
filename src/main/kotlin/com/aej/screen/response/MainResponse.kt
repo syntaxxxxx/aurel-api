@@ -3,14 +3,14 @@ package com.aej.screen.response
 import com.aej.MainException
 import io.ktor.http.*
 
-data class MainResponse(
+data class MainResponse<T>(
     var status: Boolean = false,
     var code: Int = 500,
     var message: String = "Failed",
-    var data: Any? = null
+    var data: T? = null
 ) {
     companion object {
-        fun bindToResponse(data: Any?, context: String, code: Int = 200): MainResponse {
+        fun <T>bindToResponse(data: T?, context: String, code: Int = 200): MainResponse<T> {
             return if (data != null) {
                 MainResponse(
                     status = true,

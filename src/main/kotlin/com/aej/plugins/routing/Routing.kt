@@ -57,6 +57,10 @@ fun Application.configureRouting() {
             )
         }
 
+        post("/update") {
+            KoinContainer.productRepository.fixProduct()
+        }
+
         route("/payment") {
             route("/callback") {
                 route("/va") {
