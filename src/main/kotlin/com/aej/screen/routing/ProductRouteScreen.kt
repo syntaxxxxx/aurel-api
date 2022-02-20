@@ -12,6 +12,7 @@ import io.ktor.http.content.*
 import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
+import kotlinx.css.th
 
 object ProductRouteScreen {
     private val userRepository = KoinContainer.userRepository
@@ -55,6 +56,7 @@ object ProductRouteScreen {
     suspend fun getProductWithParameter(applicationCall: ApplicationCall) = applicationCall.run {
         when {
             parameters.contains("product_id") -> getSingleProduct(this)
+            parameters.contains("key") -> searchProduct(this)
             else -> getAllProduct(this)
         }
     }
@@ -73,6 +75,23 @@ object ProductRouteScreen {
 
         val products = productRepository.getProductPage(page, limit, sellerId, category).map { it.mapToResponse() }
         val productsCount = productRepository.getSizeCount()
+        val data = mapOf(
+            "size" to productsCount,
+            "size_per_page" to limit,
+            "current_page" to page,
+            "products" to products
+        )
+        respond(MainResponse.bindToResponse(data, "Get product"))
+    }
+
+    private suspend fun searchProduct(applicationCall: ApplicationCall) = applicationCall.run {
+        val page = parameters["page"]?.toIntOrNull() ?: 1
+        val limit = parameters["per_page"]?.toIntOrNull() ?: ProductRepository.PER_PAGE
+        val sellerId = parameters["seller_id"].orEmpty().replace(" ", "+")
+        val key = parameters["key"].orEmpty()
+
+        val products = productRepository.searchProduct(key, page, limit, sellerId).map { it.mapToResponse() }
+        val productsCount = productRepository.getSizeCount(key)
         val data = mapOf(
             "size" to productsCount,
             "size_per_page" to limit,

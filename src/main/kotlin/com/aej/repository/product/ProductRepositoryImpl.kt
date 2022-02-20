@@ -4,9 +4,7 @@ import com.aej.KoinContainer
 import com.aej.MainException
 import com.aej.utils.orThrow
 import io.ktor.http.*
-import org.litote.kmongo.eq
-import org.litote.kmongo.limit
-import org.litote.kmongo.skip
+import org.litote.kmongo.*
 
 class ProductRepositoryImpl : ProductRepository {
     private val client = KoinContainer.mongoCoroutineClient
@@ -32,8 +30,46 @@ class ProductRepositoryImpl : ProductRepository {
         return collection.find().toList()
     }
 
-    override suspend fun getSizeCount(): Long {
-        return collection.countDocuments()
+    override suspend fun searchProduct(key: String, page: Int, limit: Int, ownerId: String): List<Product> {
+        val offset = (page - 1) * limit
+        val pipeline = listOf(skip(offset), limit(limit))
+
+        val product = when {
+            ownerId.isNotEmpty() && key.isEmpty() -> {
+                collection.find(Product::name eq ownerId)
+                    .skip(offset)
+                    .limit(limit)
+                    .toList()
+            }
+            key.isNotEmpty() && ownerId.isEmpty() -> {
+                collection.find(Product::name regex getRegexOfKey(key))
+                    .skip(offset)
+                    .limit(limit)
+                    .toList()
+            }
+            ownerId.isNotEmpty() && key.isNotEmpty() -> {
+                collection.find()
+                    .filter(Product::name regex getRegexOfKey(key))
+                    .filter(Product::owner eq ownerId)
+                    .skip(offset)
+                    .limit(limit)
+                    .toList()
+            }
+            else -> {
+                collection.aggregate<Product>(pipeline).toList()
+            }
+        }
+
+        return product
+    }
+
+    override suspend fun getSizeCount(key: String): Long {
+        val count = if (key.isNotEmpty()) {
+            collection.countDocuments(Product::name regex getRegexOfKey(key))
+        } else {
+            collection.countDocuments()
+        }
+        return count
     }
 
     override suspend fun getProductPage(page: Int, limit: Int, ownerId: String, category: String): List<Product> {
@@ -105,6 +141,10 @@ class ProductRepositoryImpl : ProductRepository {
             newProd.imageUrl = newProd.imageUrl.replace("http://0.0.0.0:8081", "https://aurel-store.herokuapp.com")
             updateProduct(newProd)
         }
+    }
+
+    private fun getRegexOfKey(key: String): Regex {
+        return "$key.*".toRegex()
     }
 
 }
