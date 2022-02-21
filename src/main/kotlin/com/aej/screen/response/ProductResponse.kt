@@ -7,7 +7,8 @@ data class ProductResponse(
     var stock: Int = 0,
     var category: String = "",
     var price: Long = 0,
-    var imageUrl: String = ""
+    var imageUrl: String = "",
+    var description: String = ""
 ) {
     data class UserInfo(
         var id: String = "",

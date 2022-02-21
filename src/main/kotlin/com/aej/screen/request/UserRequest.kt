@@ -1,6 +1,6 @@
 package com.aej.screen.request
 
 class UserRequest(
-    var name: String = "",
+    var username: String = "",
     var password: String = ""
 )

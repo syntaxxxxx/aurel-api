@@ -1,6 +1,6 @@
 package com.aej.repository.user
 
-import com.aej.KoinContainer
+import com.aej.container.KoinContainer
 import com.aej.MainException
 import com.aej.utils.orThrow
 import io.ktor.http.*
@@ -23,7 +23,7 @@ class UserRepositoryImpl : UserRepository {
     }
 
     override suspend fun getUserByName(name: String): User {
-        return collection.findOne(User::name eq name).orThrow()
+        return collection.findOne(User::username eq name).orThrow()
     }
 
     override suspend fun updateUser(user: User): User {

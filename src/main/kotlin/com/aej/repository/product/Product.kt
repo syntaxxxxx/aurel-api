@@ -2,11 +2,10 @@ package com.aej.repository.product
 
 import com.aej.MainException
 import com.aej.repository.user.User
-import com.aej.utils.AESUtils
 import com.aej.utils.isNol
-import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
+import com.aej.utils.randomString
 import io.ktor.http.*
+import java.time.Instant
 
 data class Product(
     var id: String = "",
@@ -16,34 +15,19 @@ data class Product(
     var price: Long = 0,
     var category: String = "",
     var imageUrl: String = "",
-    var userInfo: UserInfo = UserInfo()
+    var description: String = "",
+    var userInfo: UserInfo = UserInfo(),
+    var createdAt: String = "${Instant.now()}",
+    var updatedAt: String = "${Instant.now()}"
 ) {
     data class UserInfo(
         var id: String = "",
         var name: String = ""
     )
     companion object {
-        fun of(name: String, owner: String, stock: Int, price: Long, category: String, imageUrl: String = ""): Product {
-            val hashId = AESUtils.encrypt(name).take(8)
+        fun of(name: String, owner: String, stock: Int, price: Long, category: String): Product {
+            val hashId = randomString()
             return Product(hashId, name, owner, stock, price, category)
-        }
-
-        fun fromStringRaw(string: String): Product {
-            val type = object : TypeToken<Product>() {}.type
-            return try {
-                Gson().fromJson(string, type)
-            } catch (e: Throwable) {
-                throw MainException("Product not found", HttpStatusCode.NotFound)
-            }
-        }
-
-        fun fromStringRawNullable(string: String): Product? {
-            val type = object : TypeToken<Product>() {}.type
-            return try {
-                Gson().fromJson(string, type)
-            } catch (e: Throwable) {
-                null
-            }
         }
     }
 
@@ -53,18 +37,20 @@ data class Product(
     }
 
     fun validateItem(): Product {
-        if (id == "") id = AESUtils.encrypt(name).take(8)
+        if (id == "") id = randomString()
+
         when {
             name.isEmpty() -> throwEmptyParam("name")
-            stock.isNol() -> throwEmptyParam("quantity")
+            stock.isNol() -> throwEmptyParam("stock")
             price.isNol() -> throwEmptyParam("price")
             category.isEmpty() -> throwEmptyParam("category")
+            description.isEmpty() -> throwEmptyParam("description")
         }
         return this
     }
 
     fun withUserInfo(user: User): Product {
-        userInfo = UserInfo(user.id, user.name)
+        userInfo = UserInfo(user.id, user.username)
         return this
     }
 

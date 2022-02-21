@@ -28,7 +28,7 @@ data class Payment(
         fun of(user: User, transaction: Transaction): Payment {
             val paymentId = UUID.randomUUID().toString()
             val paymentType = transaction.paymentTransaction.toPaymentType()
-            val referenceId = "payment-${user.name}-${transaction.id}"
+            val referenceId = "payment-${user.username}-${transaction.id}"
 
             return Payment(
                 id = paymentId,

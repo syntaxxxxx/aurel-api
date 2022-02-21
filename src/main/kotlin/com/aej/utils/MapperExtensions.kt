@@ -11,7 +11,7 @@ import com.aej.services.payment.PaymentAvailableData
 fun User.mapToResponse(): UserResponse {
     return UserResponse(
         id = id,
-        name = name,
+        username = username,
         role = role,
         imageUrl = imageUrl,
         fullName = fullName,
@@ -27,6 +27,7 @@ fun Product.mapToResponse(): ProductResponse {
         price = price,
         imageUrl = imageUrl,
         category = category,
+        description = description,
         seller = ProductResponse.UserInfo(userInfo.id, userInfo.name)
     )
 }

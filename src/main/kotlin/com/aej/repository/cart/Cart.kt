@@ -3,6 +3,7 @@ package com.aej.repository.cart
 import com.aej.repository.product.Product
 import com.aej.repository.user.User
 import com.aej.utils.AESUtils
+import com.aej.utils.randomString
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import java.time.Instant
@@ -23,8 +24,7 @@ data class Cart(
 
     companion object {
         fun of(owner: User): Cart {
-            val name = "cart-${owner.name}"
-            val hashId = AESUtils.encrypt(name).take(8)
+            val hashId = randomString()
 
             return Cart(
                 id = hashId,

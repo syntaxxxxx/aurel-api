@@ -1,54 +1,41 @@
 package com.aej.plugins
 
-import com.aej.KoinContainer
+import com.aej.container.KoinContainer
 import com.aej.MainException
-import com.aej.repository.cart.Cart
-import com.aej.repository.user.User
+import com.aej.services.authentication.JwtConfig
+import com.aej.utils.orNol
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
-import io.ktor.server.response.*
-import io.ktor.server.routing.*
-import io.ktor.server.sessions.*
-import java.util.*
-import kotlin.collections.set
+import io.ktor.server.auth.jwt.*
+
 
 fun Application.configureSecurity() {
 
     val userRepository = KoinContainer.userRepository
-
-    data class MySession(val count: Int = 0)
-    install(Sessions) {
-        cookie<MySession>("MY_SESSION") {
-            cookie.extensions["SameSite"] = "lax"
-        }
-    }
+    val jwtConfig = KoinContainer.jwtConfig
 
     install(Authentication) {
-        basic("auth-basic") {
-            realm = "Access API"
-            validate { credential ->
-                val userDb = userRepository.getUserByName(credential.name)
-                val userRequest = User(name = credential.name, password = credential.password)
+        jwt(JwtConfig.NAME) {
+            realm = JwtConfig.AUTH_REALM
+            verifier(jwtConfig.verifier)
 
-                println("request pas -> ${userRequest.password}")
-                println("db pas -> ${userDb.password}")
+            validate { jwtCredential ->
+                val payload = jwtCredential.payload
+                val userIdInToken = payload.getClaim(JwtConfig.ID).asString().orEmpty()
+                val passwordHashInToken = payload.getClaim(JwtConfig.HASH).asString().orEmpty()
+                val expiredAt = jwtCredential.expiresAt?.time?.minus(System.currentTimeMillis()).orNol()
+
+                val user = userRepository.getUser(userIdInToken)
+                val userIsValid = userIdInToken == user.id && passwordHashInToken == user.password
+                val tokenIsExpired = expiredAt <= 0
 
                 when {
-                    userDb.password != userRequest.password -> {
-                        throw MainException("Invalid token", HttpStatusCode.Unauthorized)
-                    }
-                    else -> UserIdPrincipal(credential.name)
+                    tokenIsExpired -> throw MainException("Token is expired", HttpStatusCode.Unauthorized)
+                    userIsValid -> JWTPrincipal(payload)
+                    else -> throw MainException("Invalid token", HttpStatusCode.Unauthorized)
                 }
             }
-        }
-    }
-
-    routing {
-        get("/session/increment") {
-            val session = call.sessions.get<MySession>() ?: MySession()
-            call.sessions.set(session.copy(count = session.count + 1))
-            call.respondText("Counter is ${session.count}. Refresh to increment.")
         }
     }
 }

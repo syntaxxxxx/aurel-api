@@ -25,14 +25,14 @@ data class VaRequestBody(
 ) {
     companion object {
         fun of(user: User, transaction: Transaction): VaRequestBody {
-            val externalId = "payment-${user.name}-${transaction.id}"
+            val externalId = "payment-${user.username}-${transaction.id}"
             val randomVANumber = (9999000001..9999999999).random().toString()
             return VaRequestBody(
                 amount = transaction.amount,
                 expectedAmount = transaction.amount,
                 bank_code = transaction.paymentTransaction.method.removeVASuffix(),
                 external_id = externalId,
-                name = user.name,
+                name = user.username,
                 virtual_account_number = randomVANumber,
                 isSingleUse = true,
                 isClosed = true

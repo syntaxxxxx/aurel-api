@@ -1,79 +1,48 @@
 package com.aej.repository.user
 
 import com.aej.MainException
+import com.aej.services.authentication.JwtConfig
 import com.aej.utils.AESUtils
-import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
+import com.aej.utils.randomString
 import io.ktor.http.*
+import io.ktor.server.auth.*
+import io.ktor.server.auth.jwt.*
 import io.ktor.server.request.*
-import me.hana.docs.annotation.DocFieldDescription
-import java.util.*
+import java.time.Instant
 
 data class User(
     var id: String = "",
-    var name: String = "",
+    var username: String = "",
     var password: String = "",
     var role: Role = Role.CUSTOMER,
     var imageUrl: String = "",
     var fullName: String = "",
     var simpleAddress: String = "",
     var fcmToken: String = "",
-    var fcmServerKey: String = ""
+    var fcmServerKey: String = "",
+    var createdAt: String = "${Instant.now()}",
+    var updatedAt: String = "${Instant.now()}"
 ) {
 
-    fun generateId(): User {
-        id = AESUtils.encrypt(name).take(8)
-        return this
-    }
-
     companion object {
-        fun of(name: String, password: String, role: Role): User {
+        fun of(username: String, password: String, role: Role): User {
             val passwordHash = AESUtils.encrypt(password)
-            val hashId = AESUtils.encrypt(name).take(8)
+            val hashId = randomString()
             val user = User(
                 id = hashId,
-                name = name,
+                username = username,
                 role = role
             )
             user.password = passwordHash
             return user
         }
 
-        fun sampleRandom(): User {
-            return of("nadia", "Indonesia", Role.CUSTOMER)
-        }
-
-        fun getIdByName(name: String): String {
-            return AESUtils.encrypt(name).take(8)
-        }
-
-        fun fromStringRaw(string: String): User {
-            val type = object : TypeToken<User>() {}.type
-            return try {
-                Gson().fromJson(string, type)
-            } catch (e: Throwable) {
-                throw MainException("User not found", HttpStatusCode.NotFound)
-            }
-        }
-
-        fun fromStringRawNullable(string: String): User? {
-            val type = object : TypeToken<User>() {}.type
-            return try {
-                Gson().fromJson(string, type)
-            } catch (e: Throwable) {
-                null
-            }
-        }
-
         suspend fun fromToken(applicationRequest: ApplicationRequest, userRepository: UserRepository, role: Role? = null): User {
-            val key = applicationRequest.headers["Authorization"]?.removePrefix("Basic ").orEmpty()
-            if (key.isEmpty()) throw MainException("Token invalid", HttpStatusCode.Unauthorized)
+            val principal = applicationRequest.call.principal<JWTPrincipal>()
+            val payload = principal?.payload
+            val userId  = payload?.getClaim(JwtConfig.ID)?.asString().orEmpty()
 
-            val decryptKeyByteArray = Base64.getDecoder().decode(key)
-            val decryptKey = String(decryptKeyByteArray)
-            val params = decryptKey.split(":")
-
-            val user = userRepository.getUserByName(params[0])
+            val user = userRepository.getUser(userId)
             if (role != null && role != user.role) throw MainException("User not allowed", HttpStatusCode.Forbidden)
 
             return user
@@ -97,6 +66,7 @@ data class User(
             fullName = updated.fcmToken
         }
 
+        updatedAt = "${Instant.now()}"
         return this
     }
 

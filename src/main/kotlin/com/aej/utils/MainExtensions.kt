@@ -19,6 +19,8 @@ fun Int?.orNol() = this ?: 0
 fun Double?.orNol() = this ?: 0.0
 fun Long?.orNol() = this ?: 0L
 
+fun randomString(): String = UUID.randomUUID().toString()
+
 fun String.replaceSpacer(): String = replace("\\s+".toRegex(), "-")
 fun String?.orRandom() = this ?: UUID.randomUUID().toString()
 

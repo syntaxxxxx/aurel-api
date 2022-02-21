@@ -1,6 +1,6 @@
 package com.aej.services.image
 
-import com.aej.KoinContainer
+import com.aej.container.KoinContainer
 import com.aej.MainException
 import com.aej.utils.isImagesType
 import com.aej.utils.orThrow

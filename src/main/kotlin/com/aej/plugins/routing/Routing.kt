@@ -1,20 +1,18 @@
 package com.aej.plugins.routing
 
-import com.aej.KoinContainer
+import com.aej.container.KoinContainer
 import com.aej.repository.transaction.Transaction
 import com.aej.screen.response.MainResponse
+import com.aej.services.authentication.JwtConfig
 import com.aej.services.fcm.request.FcmData
 import com.aej.services.fcm.FcmServices
 import com.aej.services.fcm.response.FcmResponse
 import com.aej.services.image.ImageStorageServices
-import com.aej.services.payment.PaymentServices
 import com.aej.services.payment.merchant.callback.MerchantPaidData
 import com.aej.services.payment.simulation.PaymentSimulationPaidServices
 import com.aej.services.payment.simulation.request.SimulationPaidBody
 import com.aej.services.payment.va.callback.VaCreatedData
 import com.aej.services.payment.va.callback.VaPaidData
-import com.aej.services.payment.simulation.request.va.VaSimulationPaidBody
-import com.aej.utils.orNol
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
@@ -23,6 +21,7 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
 fun Application.configureRouting() {
+    val valueContainer = KoinContainer.valueContainer
     val paymentRepository = KoinContainer.paymentRepository
     val transactionRepository = KoinContainer.transactionRepository
     val userRepository = KoinContainer.userRepository
@@ -46,7 +45,15 @@ fun Application.configureRouting() {
     }
 
     routing {
-        get("/ping") { call.respond("Hai") }
+        get("/ping") {
+            val host = call.request.host()
+            val port = call.request.port()
+            valueContainer.apply {
+                setHost(host)
+                setPort(port)
+            }
+            call.respond("Success")
+        }
 
         get("/image/{image_name}") {
             val imageName = call.parameters["image_name"].orEmpty()
@@ -146,4 +153,4 @@ private fun isXenditCallback(applicationCall: ApplicationCall): Boolean {
     return header == xenditVaCallbackToken
 }
 
-fun Route.basicAuth(route: Route.() -> Unit) = authenticate("auth-basic") { route.invoke(this) }
+fun Route.basicAuth(route: Route.() -> Unit) = authenticate(JwtConfig.NAME) { route.invoke(this) }

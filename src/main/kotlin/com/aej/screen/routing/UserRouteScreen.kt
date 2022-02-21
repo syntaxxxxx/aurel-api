@@ -1,13 +1,12 @@
 package com.aej.screen.routing
 
-import com.aej.KoinContainer
+import com.aej.container.KoinContainer
 import com.aej.MainException
 import com.aej.repository.cart.Cart
 import com.aej.screen.response.MainResponse
 import com.aej.repository.user.User
 import com.aej.screen.request.UserFcmTokenRequest
 import com.aej.screen.request.UserRequest
-import com.aej.screen.response.UserResponse
 import com.aej.services.image.ImageStorageServices
 import com.aej.utils.AESUtils
 import com.aej.utils.mapToResponse
@@ -17,38 +16,41 @@ import io.ktor.http.content.*
 import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
-import java.util.*
 
 object UserRouteScreen {
+    private val jwtConfig = KoinContainer.jwtConfig
     private val userRepository = KoinContainer.userRepository
     private val cartRepository = KoinContainer.cartRepository
 
     suspend fun register(applicationCall: ApplicationCall, role: User.Role) = applicationCall.run {
         val userRequest = receive<UserRequest>()
-        val user = User.of(userRequest.name, userRequest.password, role)
+        val user = User.of(userRequest.username, userRequest.password, role)
         userRepository.createUser(user)
 
         if (role == User.Role.CUSTOMER) {
             val cart = Cart.of(user)
             cartRepository.createCart(cart)
         }
-        val token = Base64.getEncoder().encodeToString("${user.name}:${user.password}".toByteArray())
-        val data = mapOf("token" to "Basic $token")
+
+        val token = jwtConfig.generateToken(user)
+        val data = mapOf("token" to "Bearer $token")
         respond(MainResponse.bindToResponse(data, "Create user"))
     }
 
     suspend fun login(applicationCall: ApplicationCall) = applicationCall.run {
         val userRequest = receive<UserRequest>()
-        val user = userRepository.getUser(User.getIdByName(userRequest.name))
 
-        val passwordRequest = userRequest.password
-        val passwordDb = AESUtils.decrypt(user.password).replace("\"", "")
+        val passwordHash = AESUtils.encrypt(userRequest.password)
+        val user = userRepository.getUserByName(userRequest.username)
+        val isUserValid = passwordHash == user.password
 
-        if (passwordRequest != passwordDb) throw MainException("Password invalid!", HttpStatusCode.Unauthorized)
-
-        val token = Base64.getEncoder().encodeToString("${user.name}:${user.password}".toByteArray())
-        val data = mapOf("token" to "Basic $token")
-        respond(MainResponse.bindToResponse(data, "Login"))
+        if (isUserValid) {
+            val token = jwtConfig.generateToken(user)
+            val data = hashMapOf("token" to "Bearer $token")
+            respond(MainResponse.bindToResponse(data, "Login token"))
+        } else {
+            throw MainException("Password invalid!", HttpStatusCode.Unauthorized)
+        }
     }
 
     suspend fun getUser(applicationCall: ApplicationCall) = applicationCall.run {
@@ -88,7 +90,7 @@ object UserRouteScreen {
                     val fileBytes = part.streamProvider().readBytes()
                     val baseUrl = "https://aurel-store.herokuapp.com"
 
-                    val urlImage = ImageStorageServices.uploadFile(fileBytes, part.originalFileName.orRandom(), user.name, baseUrl)
+                    val urlImage = ImageStorageServices.uploadFile(fileBytes, part.originalFileName.orRandom(), user.username, baseUrl)
                     user.imageUrl = urlImage
                 }
                 else -> {}

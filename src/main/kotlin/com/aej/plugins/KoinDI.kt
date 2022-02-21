@@ -1,5 +1,6 @@
 package com.aej.plugins
 
+import com.aej.container.ValueContainer
 import com.aej.repository.cart.CartRepository
 import com.aej.repository.cart.CartRepositoryImpl
 import com.aej.repository.payment.PaymentRepository
@@ -10,6 +11,7 @@ import com.aej.repository.transaction.TransactionRepository
 import com.aej.repository.transaction.TransactionRepositoryImpl
 import com.aej.repository.user.UserRepository
 import com.aej.repository.user.UserRepositoryImpl
+import com.aej.services.authentication.JwtConfig
 import com.google.gson.FieldNamingPolicy
 import io.ktor.client.*
 import io.ktor.client.engine.cio.*
@@ -26,6 +28,14 @@ import org.litote.kmongo.reactivestreams.KMongo
 
 fun Application.configureKoin() {
     val dbUrl = "mongodb+srv://utsman:IndonesiaRaya1945@cluster0.p6ysg.mongodb.net"
+
+    val valueContainer = module {
+        single { ValueContainer() }
+    }
+
+    val jwtModule = module {
+        single { JwtConfig() }
+    }
 
     val userRepositoryModule = module {
         single<UserRepository> { UserRepositoryImpl() }
@@ -72,6 +82,8 @@ fun Application.configureKoin() {
 
     startKoin {
         modules(
+            valueContainer,
+            jwtModule,
             userRepositoryModule,
             productRepositoryModule,
             cartRepositoryModule,

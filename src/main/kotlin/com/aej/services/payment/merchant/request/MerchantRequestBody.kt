@@ -18,11 +18,11 @@ data class MerchantRequestBody(
 ) {
     companion object {
         fun of(user: User, transaction: Transaction): MerchantRequestBody {
-            val externalId = "payment-${user.name}-${transaction.id}"
+            val externalId = "payment-${user.username}-${transaction.id}"
             return MerchantRequestBody(
                 expectedAmount = transaction.amount,
                 externalId = externalId,
-                name = user.name,
+                name = user.username,
                 retailOutletName = transaction.paymentTransaction.method.removeMerchantSuffix()
             )
         }

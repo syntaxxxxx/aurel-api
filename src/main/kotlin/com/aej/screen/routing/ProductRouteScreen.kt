@@ -1,20 +1,21 @@
 package com.aej.screen.routing
 
-import com.aej.KoinContainer
+import com.aej.container.KoinContainer
 import com.aej.repository.product.Product
 import com.aej.repository.product.ProductRepository
 import com.aej.repository.user.User
-import com.aej.screen.request.ProductRequest
 import com.aej.screen.response.MainResponse
 import com.aej.services.image.ImageStorageServices
-import com.aej.utils.*
+import com.aej.utils.mapToResponse
+import com.aej.utils.orNol
+import com.aej.utils.orRandom
 import io.ktor.http.content.*
 import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
-import kotlinx.css.th
 
 object ProductRouteScreen {
+    private val valueContainer = KoinContainer.valueContainer
     private val userRepository = KoinContainer.userRepository
     private val productRepository = KoinContainer.productRepository
 
@@ -29,13 +30,14 @@ object ProductRouteScreen {
                         "stock" -> product.stock = part.value.toIntOrNull().orNol()
                         "price" -> product.price = part.value.toLongOrNull().orNol()
                         "category" -> product.category = part.value
+                        "description" -> product.description = part.value
                     }
                 }
                 is PartData.FileItem -> {
                     val fileBytes = part.streamProvider().readBytes()
-                    val baseUrl = "https://aurel-store.herokuapp.com"
+                    val baseUrl = valueContainer.getBaseUrl()
 
-                    val urlImage = ImageStorageServices.uploadFile(fileBytes, part.originalFileName.orRandom(), user.name, baseUrl)
+                    val urlImage = ImageStorageServices.uploadFile(fileBytes, part.originalFileName.orRandom(), user.username, baseUrl)
                     product.imageUrl = urlImage
                 }
                 else -> {}
@@ -50,7 +52,7 @@ object ProductRouteScreen {
     suspend fun getProductByOwner(applicationCall: ApplicationCall) = applicationCall.run {
         val user = User.fromToken(request, userRepository)
         val products = productRepository.getProductByOwner(user.id).map { it.mapToResponse() }
-        respond(MainResponse.bindToResponse(products, "Get product of ${user.name}"))
+        respond(MainResponse.bindToResponse(products, "Get product of ${user.username}"))
     }
 
     suspend fun getProductWithParameter(applicationCall: ApplicationCall) = applicationCall.run {
