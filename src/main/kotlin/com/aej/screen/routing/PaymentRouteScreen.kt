@@ -14,6 +14,8 @@ import com.aej.utils.mapToResponse
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.response.*
+import kotlinx.coroutines.delay
+import org.litote.kmongo.json
 
 object PaymentRouteScreen {
     private val userRepository = KoinContainer.userRepository
@@ -59,18 +61,20 @@ object PaymentRouteScreen {
 
         paymentRepository.createPayment(payment)
         val paymentData = paymentRepository.getPayment(payment.id)
-        val newTransaction = transaction.apply {
-            paymentTransaction.statusPayment = paymentData.status
-        }
-        transactionRepository.updateTransaction(newTransaction.id, newTransaction)
 
+        val newPayment = transaction.paymentTransaction.apply {
+            statusPayment = paymentData.status
+        }
+
+        transactionRepository.updatePaymentTransaction(transactionId, newPayment)
         respond(MainResponse.bindToResponse(paymentData.mapToResponse(), "Create payment"))
     }
 
     suspend fun getPayment(applicationCall: ApplicationCall) = applicationCall.run {
-        when (parameters.contains("payment_id")) {
-            true -> getUserPayment(this)
-            false -> getCurrentPayment(this)
+        when {
+            parameters.contains("payment_id") -> getUserPayment(this)
+            parameters.contains("transaction_id") -> getPaymentByTransactionId(this)
+            else -> getCurrentPayment(this)
         }
     }
 
@@ -89,6 +93,15 @@ object PaymentRouteScreen {
         val user = User.fromToken(request, userRepository)
         val paymentId = parameters["payment_id"].orEmpty()
         val payment = paymentRepository.getPayment(paymentId).mapToResponse()
+        if (payment.ownerId != user.id) throw MainException("Payment not found!", HttpStatusCode.BadRequest)
+        respond(MainResponse.bindToResponse(payment, "Get payment"))
+    }
+
+    private suspend fun getPaymentByTransactionId(applicationCall: ApplicationCall) = applicationCall.run {
+        val user = User.fromToken(request, userRepository)
+        val transactionId = parameters["transaction_id"].orEmpty()
+        val payment = paymentRepository.getPaymentByTransactionId(transactionId).mapToResponse()
+
         if (payment.ownerId != user.id) throw MainException("Payment not found!", HttpStatusCode.BadRequest)
         respond(MainResponse.bindToResponse(payment, "Get payment"))
     }

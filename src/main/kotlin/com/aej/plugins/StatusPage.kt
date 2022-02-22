@@ -72,5 +72,15 @@ fun Application.configureStatusPage() {
                 )
             )
         }
+        exception<BadRequestException> { call, cause ->
+            call.respond(
+                HttpStatusCode.BadRequest,
+                MainResponse<String>(
+                    status = false,
+                    code = HttpStatusCode.BadRequest.value,
+                    message = cause.localizedMessage
+                )
+            )
+        }
     }
 }

@@ -2,9 +2,10 @@ package com.aej.repository.transaction
 
 import com.aej.container.KoinContainer
 import com.aej.MainException
+import com.aej.repository.product.Product
 import com.aej.utils.orThrow
 import io.ktor.http.*
-import org.litote.kmongo.eq
+import org.litote.kmongo.*
 
 class TransactionRepositoryImpl : TransactionRepository {
     private val client = KoinContainer.mongoCoroutineClient
@@ -31,6 +32,43 @@ class TransactionRepositoryImpl : TransactionRepository {
         return collection.findOne(Transaction::id eq transactionId).orThrow()
     }
 
+    override suspend fun getAllTransaction(page: Int, limit: Int, userId: String): List<Transaction> {
+        val offset = (page - 1) * limit
+
+        return collection.find(Transaction::customerId eq userId)
+            .sort(descending(Transaction::updatedAt))
+            .skip(offset)
+            .limit(limit)
+            .toList()
+    }
+
+    override suspend fun getAllTransactionByStatus(
+        page: Int,
+        limit: Int,
+        userId: String,
+        status: String
+    ): List<Transaction> {
+        val enumStatus = Transaction.StatusTransaction.valueOf(status.uppercase())
+        val offset = (page - 1) * limit
+
+        return collection.find(Transaction::customerId eq userId)
+            .filter(Transaction::statusTransaction eq enumStatus)
+            .sort(descending(Transaction::updatedAt))
+            .skip(offset)
+            .limit(limit)
+            .toList()
+    }
+
+    override suspend fun getSizeCount(status: String): Long {
+        val count = if (status.isNotEmpty()) {
+            val enumStatus = Transaction.StatusTransaction.valueOf(status.uppercase())
+            collection.countDocuments(Transaction::statusTransaction eq enumStatus)
+        } else {
+            collection.countDocuments()
+        }
+        return count
+    }
+
     override suspend fun getTransactionGroup(groupId: String): List<Transaction> {
         return collection.find(Transaction::groupId eq groupId).toList()
     }
@@ -39,14 +77,17 @@ class TransactionRepositoryImpl : TransactionRepository {
         return collection.find(Transaction::cartId eq cartId).toList()
     }
 
-    override suspend fun getCustomerTransaction(userId: String): List<Transaction> {
-        return collection.find(Transaction::customerId eq userId)
-            .sort(Transaction::statusTransaction eq Transaction.StatusTransaction.WAITING)
-            .toList()
+    override suspend fun updateTransaction(transactionId: String, transaction: Transaction): Transaction {
+        println("transaction update --> ${transaction.json}")
+        collection.updateOne(Transaction::id eq transactionId, transaction)
+        return getTransaction(transactionId)
     }
 
-    override suspend fun updateTransaction(transactionId: String, transaction: Transaction): Transaction {
-        collection.updateOne(Transaction::id eq transactionId, transaction)
+    override suspend fun updatePaymentTransaction(
+        transactionId: String,
+        paymentTransaction: Transaction.PaymentTransaction
+    ): Transaction {
+        collection.updateOne(Transaction::id eq transactionId, setValue(Transaction::paymentTransaction, paymentTransaction))
         return getTransaction(transactionId)
     }
 }

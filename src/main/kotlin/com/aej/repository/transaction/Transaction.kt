@@ -55,7 +55,7 @@ data class Transaction(
     ) {
         companion object {
             fun init(method: String): PaymentTransaction {
-                return PaymentTransaction(method)
+                return PaymentTransaction(method = method)
             }
         }
     }

@@ -5,6 +5,7 @@ import com.aej.repository.product.Product
 import com.aej.repository.product.ProductRepository
 import com.aej.repository.user.User
 import com.aej.screen.response.MainResponse
+import com.aej.screen.routing.data.PagingData
 import com.aej.services.image.ImageStorageServices
 import com.aej.utils.mapToResponse
 import com.aej.utils.orNol
@@ -77,13 +78,13 @@ object ProductRouteScreen {
 
         val products = productRepository.getProductPage(page, limit, sellerId, category).map { it.mapToResponse() }
         val productsCount = productRepository.getSizeCount()
-        val data = mapOf(
-            "size" to productsCount,
-            "size_per_page" to limit,
-            "current_page" to page,
-            "products" to products
+        val pagingData = PagingData(
+            count = productsCount,
+            countPerPage = limit.toLong(),
+            currentPage = page.toLong(),
+            data = products
         )
-        respond(MainResponse.bindToResponse(data, "Get product"))
+        respond(MainResponse.bindToResponse(pagingData, "Get product"))
     }
 
     private suspend fun searchProduct(applicationCall: ApplicationCall) = applicationCall.run {
@@ -94,13 +95,13 @@ object ProductRouteScreen {
 
         val products = productRepository.searchProduct(key, page, limit, sellerId).map { it.mapToResponse() }
         val productsCount = productRepository.getSizeCount(key)
-        val data = mapOf(
-            "size" to productsCount,
-            "size_per_page" to limit,
-            "current_page" to page,
-            "products" to products
+        val pagingData = PagingData(
+            count = productsCount,
+            countPerPage = limit.toLong(),
+            currentPage = page.toLong(),
+            data = products
         )
-        respond(MainResponse.bindToResponse(data, "Get product"))
+        respond(MainResponse.bindToResponse(pagingData, "Get product"))
     }
 
     suspend fun getAllCategory(applicationCall: ApplicationCall) = applicationCall.run {

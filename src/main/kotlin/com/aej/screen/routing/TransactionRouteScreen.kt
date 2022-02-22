@@ -3,14 +3,17 @@ package com.aej.screen.routing
 import com.aej.container.KoinContainer
 import com.aej.MainException
 import com.aej.repository.payment.PaymentType
+import com.aej.repository.product.ProductRepository
 import com.aej.repository.transaction.Transaction
 import com.aej.repository.user.User
 import com.aej.screen.response.MainResponse
+import com.aej.screen.routing.data.PagingData
 import com.aej.services.payment.PaymentServices
 import com.aej.utils.mapToResponse
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.response.*
+import kotlinx.css.th
 
 object TransactionRouteScreen {
     private val userRepository = KoinContainer.userRepository
@@ -33,7 +36,7 @@ object TransactionRouteScreen {
 
         if (!method.isActivated) throw MainException("Payment method is inactive!")
 
-        val transactions = Transaction.of(cart, Transaction.PaymentTransaction.init(paymentParameter))
+        val transactions = Transaction.of(cart, Transaction.PaymentTransaction.init(method = paymentParameter))
 
         // validation amount with method
         transactions.forEach { transaction ->
@@ -78,17 +81,53 @@ object TransactionRouteScreen {
     }
 
     suspend fun getUserTransaction(applicationCall: ApplicationCall) = applicationCall.run {
-        when (parameters.contains("transaction_id")) {
-            true -> getTransaction(this)
-            false -> getCurrentTransaction(this)
+        when {
+            parameters.contains("transaction_id") -> getTransaction(this)
+            parameters.contains("status") -> getTransactionByStatus(this)
+            else -> getAllTransactions(this)
         }
     }
 
-    private suspend fun getCurrentTransaction(applicationCall: ApplicationCall) = applicationCall.run {
+    private suspend fun getAllTransactions(applicationCall: ApplicationCall) = applicationCall.run {
         val user = User.fromToken(request, userRepository)
-        val cart = cartRepository.getCart(user.id)
-        val transaction = transactionRepository.getCartTransaction(cart.id).map { it.mapToResponse() }
-        respond(MainResponse.bindToResponse(transaction, "Get current transaction"))
+        val page = parameters["page"]?.toIntOrNull() ?: 1
+        val limit = parameters["per_page"]?.toIntOrNull() ?: ProductRepository.PER_PAGE
+        val transactions = transactionRepository.getAllTransaction(page, limit, user.id)
+        val count = transactionRepository.getSizeCount()
+
+        val pagingData = PagingData(
+            count = count,
+            countPerPage = limit.toLong(),
+            currentPage = page.toLong(),
+            data = transactions
+        )
+
+        respond(MainResponse.bindToResponse(pagingData, "Get all transaction"))
+    }
+
+    private suspend fun getTransactionByStatus(applicationCall: ApplicationCall) = applicationCall.run {
+        val user = User.fromToken(request, userRepository)
+        val status = parameters["status"].orEmpty().uppercase()
+        val page = parameters["page"]?.toIntOrNull() ?: 1
+        val limit = parameters["per_page"]?.toIntOrNull() ?: ProductRepository.PER_PAGE
+
+        try {
+            Transaction.StatusTransaction.valueOf(status)
+        } catch (e: EnumConstantNotPresentException) {
+            throw MainException("Status invalid!", HttpStatusCode.BadRequest)
+        }
+
+        val transactions = transactionRepository.getAllTransactionByStatus(page, limit, user.id, status)
+        val count = transactionRepository.getSizeCount(status)
+
+        val pagingData = PagingData(
+            count = count,
+            countPerPage = limit.toLong(),
+            currentPage = page.toLong(),
+            data = transactions
+        )
+
+        respond(MainResponse.bindToResponse(pagingData, "Get all transaction"))
     }
 
     private suspend fun getTransaction(applicationCall: ApplicationCall) = applicationCall.run {

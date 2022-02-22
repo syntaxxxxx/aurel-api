@@ -77,12 +77,11 @@ fun Application.configureRouting() {
                             paymentRepository.confirmedCreatedPayment(responseBody.externalId)
                             val payment = paymentRepository.getPaymentByExternalId(responseBody.externalId)
 
-                            val transaction = transactionRepository.getTransaction(payment.transactionId).apply {
-                                statusTransaction = Transaction.StatusTransaction.WAITING
-                                paymentTransaction.statusPayment = payment.status
+                            val transaction = transactionRepository.getTransaction(payment.transactionId)
+                            val newPayment = transaction.paymentTransaction.apply {
+                                statusPayment = payment.status
                             }
-                            transactionRepository.updateTransaction(transaction.id, transaction)
-
+                            transactionRepository.updatePaymentTransaction(transaction.id, newPayment)
                             call.respond(MainResponse.bindToResponse(responseBody, "Va created"))
                         }
                     }

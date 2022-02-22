@@ -27,6 +27,10 @@ class PaymentRepositoryImpl : PaymentRepository {
         return collection.findOne(Payment::referenceId eq externalId).orThrow()
     }
 
+    override suspend fun getPaymentByTransactionId(transactionId: String): Payment {
+        return collection.findOne(Payment::transactionId eq transactionId).orThrow()
+    }
+
     override suspend fun updatePayment(payment: Payment): Payment {
         collection.updateOne(Payment::id eq payment.id, payment)
         return getPayment(payment.id)
