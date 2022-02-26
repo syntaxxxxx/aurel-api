@@ -30,7 +30,7 @@ object UserRouteScreen {
         val user = User.of(userRequest.username, userRequest.password, role)
 
         val defaultImageBytes = DefaultImageUtils.createImage(user.username.first().toString())
-        val defaultNames = "${user.username}-default"
+        val defaultNames = "${user.username}-default.png"
         val urlImage = ImageStorageServices.uploadFile(
             defaultImageBytes,
             defaultNames,
