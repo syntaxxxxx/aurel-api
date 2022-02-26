@@ -40,7 +40,7 @@ class ProductRepositoryImpl : ProductRepository {
         sort: ProductSort
     ): List<Product> {
         val offset = (page - 1) * limit
-        val pipeline = listOf(skip(offset), limit(limit), getBsonBySort(sort))
+        val pipeline = listOf(getBsonBySort(sort), skip(offset), limit(limit))
 
         val product = when {
             ownerId.isNotEmpty() && key.isEmpty() -> {
@@ -91,7 +91,7 @@ class ProductRepositoryImpl : ProductRepository {
         sort: ProductSort
     ): List<Product> {
         val offset = (page - 1) * limit
-        val pipeline = listOf(skip(offset), limit(limit), getBsonBySort(sort))
+        val pipeline = listOf(getBsonBySort(sort), skip(offset), limit(limit))
 
         val product = when {
             ownerId.isNotEmpty() && category.isEmpty() -> {
