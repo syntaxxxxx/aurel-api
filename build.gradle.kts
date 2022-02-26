@@ -6,6 +6,7 @@ val koin_version: String by project
 val tika_version: String by project
 val kmongo_version: String by project
 val hana_version: String by project
+val imagej_version: String by project
 
 plugins {
     application
@@ -65,6 +66,9 @@ dependencies {
 
     // ktor doc
     implementation("com.github.utsmannn:hana:$hana_version")
+
+    // imagej
+    //implementation("net.imagej:ij:$imagej_version")
 }
 
 tasks {

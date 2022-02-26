@@ -13,6 +13,7 @@ import com.aej.services.payment.simulation.PaymentSimulationPaidServices
 import com.aej.services.payment.simulation.request.SimulationPaidBody
 import com.aej.services.payment.va.callback.VaCreatedData
 import com.aej.services.payment.va.callback.VaPaidData
+import com.aej.utils.DefaultImageUtils
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
@@ -53,6 +54,15 @@ fun Application.configureRouting() {
                 setPort(port)
             }
             call.respond("Success")
+        }
+
+        get("/default/{username}") {
+            val text = call.parameters["username"] ?: "unknown"
+            val bytes = DefaultImageUtils.createImage(text.first().toString())
+            call.respondBytes(
+                contentType = ContentType.Image.PNG,
+                bytes = bytes
+            )
         }
 
         get("/image/{image_name}") {

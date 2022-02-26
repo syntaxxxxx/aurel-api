@@ -9,6 +9,7 @@ import com.aej.screen.request.UserFcmTokenRequest
 import com.aej.screen.request.UserRequest
 import com.aej.services.image.ImageStorageServices
 import com.aej.utils.AESUtils
+import com.aej.utils.DefaultImageUtils
 import com.aej.utils.mapToResponse
 import com.aej.utils.orRandom
 import io.ktor.http.*
@@ -18,6 +19,8 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 
 object UserRouteScreen {
+    private const val BASE_URL = "https://aurel-store.herokuapp.com"
+
     private val jwtConfig = KoinContainer.jwtConfig
     private val userRepository = KoinContainer.userRepository
     private val cartRepository = KoinContainer.cartRepository
@@ -25,6 +28,16 @@ object UserRouteScreen {
     suspend fun register(applicationCall: ApplicationCall, role: User.Role) = applicationCall.run {
         val userRequest = receive<UserRequest>()
         val user = User.of(userRequest.username, userRequest.password, role)
+
+        val defaultImageBytes = DefaultImageUtils.createImage(user.username.first().toString())
+        val defaultNames = "${user.username}-default"
+        val urlImage = ImageStorageServices.uploadFile(
+            defaultImageBytes,
+            defaultNames,
+            user.username,
+            BASE_URL
+        )
+        user.imageUrl = urlImage
         userRepository.createUser(user)
 
         if (role == User.Role.CUSTOMER) {
@@ -88,9 +101,13 @@ object UserRouteScreen {
             when (part) {
                 is PartData.FileItem -> {
                     val fileBytes = part.streamProvider().readBytes()
-                    val baseUrl = "https://aurel-store.herokuapp.com"
 
-                    val urlImage = ImageStorageServices.uploadFile(fileBytes, part.originalFileName.orRandom(), user.username, baseUrl)
+                    val urlImage = ImageStorageServices.uploadFile(
+                        fileBytes,
+                        part.originalFileName.orRandom(),
+                        user.username,
+                        BASE_URL
+                    )
                     user.imageUrl = urlImage
                 }
                 else -> {}
