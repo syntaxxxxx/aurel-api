@@ -1,4 +1,6 @@
 import com.google.gson.FieldNamingPolicy
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.engine.cio.*
@@ -31,15 +33,27 @@ object Client {
         "https://docs.google.com/spreadsheets/d/e/2PACX-1vTORAfyMaFUH0Joyt0_GqMjr_b9OV5aB2w2BDHDXhjs-si5o228rjzxRIylL90LLuj7GPZ9f93uk1KM/pub?gid=0&single=true&output=csv"
     const val CSV_USER_SELLER =
         "https://docs.google.com/spreadsheets/d/e/2PACX-1vTORAfyMaFUH0Joyt0_GqMjr_b9OV5aB2w2BDHDXhjs-si5o228rjzxRIylL90LLuj7GPZ9f93uk1KM/pub?gid=955433307&single=true&output=csv"
-    const val CSV_PRODUCT =
+
+    const val CSV_PRODUCT_1 =
         "https://docs.google.com/spreadsheets/d/e/2PACX-1vTORAfyMaFUH0Joyt0_GqMjr_b9OV5aB2w2BDHDXhjs-si5o228rjzxRIylL90LLuj7GPZ9f93uk1KM/pub?gid=9630758&single=true&output=csv"
 
+    const val CSV_PRODUCT_2 =
+        "https://docs.google.com/spreadsheets/d/e/2PACX-1vTORAfyMaFUH0Joyt0_GqMjr_b9OV5aB2w2BDHDXhjs-si5o228rjzxRIylL90LLuj7GPZ9f93uk1KM/pub?gid=648637306&single=true&output=csv"
+
+    const val CSV_PRODUCT_3 =
+        "https://docs.google.com/spreadsheets/d/e/2PACX-1vTORAfyMaFUH0Joyt0_GqMjr_b9OV5aB2w2BDHDXhjs-si5o228rjzxRIylL90LLuj7GPZ9f93uk1KM/pub?gid=1045805880&single=true&output=csv"
+
     private const val BASE_URL = "https://aurel-store.herokuapp.com"
+    private const val PING = "$BASE_URL/ping"
     private const val REGISTER_CUSTOMER = "$BASE_URL/v1/user/customer/register"
     private const val REGISTER_SELLER = "$BASE_URL/v1/user/seller/register"
 
     private const val LOGIN = "$BASE_URL/v1/user/login"
     private const val ADD_PRODUCT = "$BASE_URL/v1/seller/product"
+
+    suspend fun ping() {
+        client.get(PING)
+    }
 
     suspend fun getCsv(csvUrl: String): String {
         println("getting....")
@@ -71,7 +85,9 @@ object Client {
             setBody(user)
         }
 
-        return data.bodyAsText()
+        val loginData = Gson().fromJson<LoginResponse>(data.bodyAsText(), object : TypeToken<LoginResponse>() {
+        }.type)
+        return loginData.data.token
     }
 
     suspend fun addProduct(product: Map<String, String>, token: String): String {
@@ -89,7 +105,7 @@ object Client {
                     append("price", product["price"].orEmpty())
                     append("category", product["category"].orEmpty())
                     append("description", product["description"].orEmpty())
-                    append("sold_count", product["stock_count"].orEmpty())
+                    append("sold_count", product["sold_count"].orEmpty())
                     append("image", imageArray, Headers.build {
                         append(HttpHeaders.ContentType, mimeType)
                         append(HttpHeaders.ContentDisposition, "filename=$fileName")

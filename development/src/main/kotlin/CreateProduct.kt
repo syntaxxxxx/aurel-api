@@ -1,11 +1,23 @@
 import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
 
 suspend fun main(args: Array<String>) {
-    val token = "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6ImNvbS5hZWouYXVyZWwiLCJpZCI6IjQ4ZjI4NThiLTFkMGUtNDJmNi04NmE0LWJkZWUxMDJlMTBiMSIsImV4cCI6MTY0NjUwODQ0NCwiaGFzaCI6IldXMytQaXpDOGJaemRqMldFTGFDemc9PSJ9.cbFz-iYV_PYdRJ7anwfjXZbippH28dvShkKGlARKhuMFaGDCUY0_pzKyEsyyOac-ySqzeD6jFkJn2EpL8m0k0w"
+    createNewProduct()
+}
 
-    val product = readProductCsv(Client.getCsv(Client.CSV_PRODUCT))
-    product.forEach {
-        Client.addProduct(it, token)
+suspend fun createNewProduct() {
+    Client.ping()
+
+    readUserCsv(Client.getCsv(Client.CSV_USER_SELLER)).forEachIndexed { index, map ->
+        val result = Client.getToken(map)
+        val url = when (index) {
+            0 -> Client.CSV_PRODUCT_1
+            1 -> Client.CSV_PRODUCT_2
+            else -> Client.CSV_PRODUCT_3
+        }
+
+        readProductCsv(Client.getCsv(url)).forEach { product ->
+            Client.addProduct(product, result)
+        }
     }
 }
 

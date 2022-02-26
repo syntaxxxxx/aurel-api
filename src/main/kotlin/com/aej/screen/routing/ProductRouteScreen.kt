@@ -3,6 +3,7 @@ package com.aej.screen.routing
 import com.aej.container.KoinContainer
 import com.aej.repository.product.Product
 import com.aej.repository.product.ProductRepository
+import com.aej.repository.product.toProductSort
 import com.aej.repository.user.User
 import com.aej.screen.response.MainResponse
 import com.aej.screen.routing.data.PagingData
@@ -51,14 +52,9 @@ object ProductRouteScreen {
         respond(MainResponse.bindToResponse(productData, "Add product"))
     }
 
-    suspend fun getProductByOwner(applicationCall: ApplicationCall) = applicationCall.run {
-        val user = User.fromToken(request, userRepository)
-        val products = productRepository.getProductByOwner(user.id).map { it.mapToResponse() }
-        respond(MainResponse.bindToResponse(products, "Get product of ${user.username}"))
-    }
-
     suspend fun getProductWithParameter(applicationCall: ApplicationCall) = applicationCall.run {
         when {
+
             parameters.contains("product_id") -> getSingleProduct(this)
             parameters.contains("key") -> searchProduct(this)
             else -> getAllProduct(this)
@@ -76,8 +72,9 @@ object ProductRouteScreen {
         val limit = parameters["per_page"]?.toIntOrNull() ?: ProductRepository.PER_PAGE
         val sellerId = parameters["seller_id"].orEmpty().replace(" ", "+")
         val category = parameters["category"].orEmpty()
+        val sort = parameters["sort"].orEmpty().toProductSort()
 
-        val products = productRepository.getProductPage(page, limit, sellerId, category).map { it.mapToResponse() }
+        val products = productRepository.getProductPage(page, limit, sellerId, category, sort).map { it.mapToResponse() }
         val productsCount = productRepository.getSizeCount()
         val pagingData = PagingData(
             count = productsCount,
@@ -93,8 +90,9 @@ object ProductRouteScreen {
         val limit = parameters["per_page"]?.toIntOrNull() ?: ProductRepository.PER_PAGE
         val sellerId = parameters["seller_id"].orEmpty().replace(" ", "+")
         val key = parameters["key"].orEmpty()
+        val sort = parameters["sort"].orEmpty().toProductSort()
 
-        val products = productRepository.searchProduct(key, page, limit, sellerId).map { it.mapToResponse() }
+        val products = productRepository.searchProduct(key, page, limit, sellerId, sort).map { it.mapToResponse() }
         val productsCount = productRepository.getSizeCount(key)
         val pagingData = PagingData(
             count = productsCount,

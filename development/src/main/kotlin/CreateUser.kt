@@ -1,6 +1,10 @@
 import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
 
 suspend fun main(args: Array<String>) {
+    createNewUser()
+}
+
+suspend fun createNewUser() {
     println("start")
 
     val customer = readUserCsv(Client.getCsv(Client.CSV_USER_CUSTOMER))
@@ -9,6 +13,8 @@ suspend fun main(args: Array<String>) {
     println("customer --> $customer")
     println("----")
     println("seller --> $seller")
+
+    Client.ping()
 
     customer.forEach {
         println("create customer for -> ${it["username"]}")

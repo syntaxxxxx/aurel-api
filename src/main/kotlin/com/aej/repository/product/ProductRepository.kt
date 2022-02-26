@@ -5,9 +5,9 @@ interface ProductRepository {
     suspend fun getProduct(id: String): Product
     suspend fun getProductByOwner(ownerId: String): List<Product>
     suspend fun getAllProduct(): List<Product>
-    suspend fun searchProduct(key: String, page: Int, limit: Int, ownerId: String): List<Product>
+    suspend fun searchProduct(key: String, page: Int, limit: Int, ownerId: String, sort: ProductSort = ProductSort.DATE): List<Product>
     suspend fun getSizeCount(key: String = ""): Long
-    suspend fun getProductPage(page: Int, limit: Int, ownerId: String, category: String): List<Product>
+    suspend fun getProductPage(page: Int, limit: Int, ownerId: String, category: String, sort: ProductSort = ProductSort.DATE): List<Product>
     suspend fun updateProduct(product: Product): Product
     suspend fun incrementProduct(id: String, quantity: Int): Product
     suspend fun decrementProduct(id: String, quantity: Int): Product

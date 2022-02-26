@@ -4,7 +4,9 @@ import com.aej.container.KoinContainer
 import com.aej.MainException
 import com.aej.utils.orThrow
 import io.ktor.http.*
+import org.bson.conversions.Bson
 import org.litote.kmongo.*
+import org.litote.kmongo.coroutine.CoroutineFindPublisher
 
 class ProductRepositoryImpl : ProductRepository {
     private val client = KoinContainer.mongoCoroutineClient
@@ -30,19 +32,27 @@ class ProductRepositoryImpl : ProductRepository {
         return collection.find().toList()
     }
 
-    override suspend fun searchProduct(key: String, page: Int, limit: Int, ownerId: String): List<Product> {
+    override suspend fun searchProduct(
+        key: String,
+        page: Int,
+        limit: Int,
+        ownerId: String,
+        sort: ProductSort
+    ): List<Product> {
         val offset = (page - 1) * limit
-        val pipeline = listOf(skip(offset), limit(limit))
+        val pipeline = listOf(skip(offset), limit(limit), getBsonBySort(sort))
 
         val product = when {
             ownerId.isNotEmpty() && key.isEmpty() -> {
                 collection.find(Product::name eq ownerId)
+                    .manageSort(sort)
                     .skip(offset)
                     .limit(limit)
                     .toList()
             }
             key.isNotEmpty() && ownerId.isEmpty() -> {
                 collection.find(Product::name regex getRegexOfKey(key))
+                    .manageSort(sort)
                     .skip(offset)
                     .limit(limit)
                     .toList()
@@ -51,6 +61,7 @@ class ProductRepositoryImpl : ProductRepository {
                 collection.find()
                     .filter(Product::name regex getRegexOfKey(key))
                     .filter(Product::owner eq ownerId)
+                    .manageSort(sort)
                     .skip(offset)
                     .limit(limit)
                     .toList()
@@ -72,19 +83,27 @@ class ProductRepositoryImpl : ProductRepository {
         return count
     }
 
-    override suspend fun getProductPage(page: Int, limit: Int, ownerId: String, category: String): List<Product> {
+    override suspend fun getProductPage(
+        page: Int,
+        limit: Int,
+        ownerId: String,
+        category: String,
+        sort: ProductSort
+    ): List<Product> {
         val offset = (page - 1) * limit
-        val pipeline = listOf(skip(offset), limit(limit))
+        val pipeline = listOf(skip(offset), limit(limit), getBsonBySort(sort))
 
         val product = when {
             ownerId.isNotEmpty() && category.isEmpty() -> {
                 collection.find(Product::owner eq ownerId)
+                    .manageSort(sort)
                     .skip(offset)
                     .limit(limit)
                     .toList()
             }
             category.isNotEmpty() && ownerId.isEmpty() -> {
                 collection.find(Product::category eq category)
+                    .manageSort(sort)
                     .skip(offset)
                     .limit(limit)
                     .toList()
@@ -93,6 +112,7 @@ class ProductRepositoryImpl : ProductRepository {
                 collection.find()
                     .filter(Product::category eq category)
                     .filter(Product::owner eq ownerId)
+                    .manageSort(sort)
                     .skip(offset)
                     .limit(limit)
                     .toList()
@@ -146,5 +166,37 @@ class ProductRepositoryImpl : ProductRepository {
     private fun getRegexOfKey(key: String): Regex {
         return "$key.*".toRegex()
     }
+
+    private fun CoroutineFindPublisher<Product>.manageSort(sort: ProductSort): CoroutineFindPublisher<Product> {
+        return when (sort) {
+            ProductSort.DATE -> {
+                sort(bsonSortDate())
+            }
+            ProductSort.POPULAR -> {
+                sort(bsonSortPopular())
+            }
+            ProductSort.PRICE -> {
+                sort(bsonSortPrice())
+            }
+        }
+    }
+
+    private fun getBsonBySort(sort: ProductSort): Bson {
+        return when (sort) {
+            ProductSort.DATE -> {
+                sort(bsonSortDate())
+            }
+            ProductSort.POPULAR -> {
+                sort(bsonSortPopular())
+            }
+            ProductSort.PRICE -> {
+                sort(bsonSortPrice())
+            }
+        }
+    }
+
+    private fun bsonSortDate() = ascending(Product::updatedAt)
+    private fun bsonSortPopular() = ascending(Product::soldCount)
+    private fun bsonSortPrice() = ascending(Product::price)
 
 }
