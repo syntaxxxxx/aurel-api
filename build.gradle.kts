@@ -66,9 +66,6 @@ dependencies {
 
     // ktor doc
     implementation("com.github.utsmannn:hana:$hana_version")
-
-    // imagej
-    //implementation("net.imagej:ij:$imagej_version")
 }
 
 tasks {

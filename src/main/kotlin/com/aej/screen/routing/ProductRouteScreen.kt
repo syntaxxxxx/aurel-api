@@ -32,6 +32,7 @@ object ProductRouteScreen {
                         "price" -> product.price = part.value.toLongOrNull().orNol()
                         "category" -> product.category = part.value
                         "description" -> product.description = part.value
+                        "sold_count" -> product.soldCount = part.value.toLongOrNull().orNol()
                     }
                 }
                 is PartData.FileItem -> {

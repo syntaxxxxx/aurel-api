@@ -28,6 +28,7 @@ fun Product.mapToResponse(): ProductResponse {
         imageUrl = imageUrl,
         category = category,
         description = description,
+        soldCount = soldCount,
         seller = ProductResponse.UserInfo(userInfo.id, userInfo.name)
     )
 }

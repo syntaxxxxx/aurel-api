@@ -1,5 +1,6 @@
 val ktor_version: String by project
 val logback_version: String by project
+val tika_version: String by project
 
 plugins {
     kotlin("jvm")
@@ -30,6 +31,7 @@ dependencies {
     implementation("ch.qos.logback:logback-classic:$logback_version")
 
     implementation("com.github.doyaaaaaken:kotlin-csv-jvm:1.2.0")
+    implementation("org.apache.tika:tika-core:$tika_version")
 }
 
 tasks.getByName<Test>("test") {

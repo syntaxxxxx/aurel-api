@@ -23,7 +23,7 @@ suspend fun main(args: Array<String>) {
     }
 }
 
-private fun readUserCsv(csv: String): List<Map<String, String>> {
+fun readUserCsv(csv: String): List<Map<String, String>> {
     return csvReader().readAll(csv).map {
         mapOf(
             "username" to it[0],

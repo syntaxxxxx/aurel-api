@@ -8,7 +8,8 @@ data class ProductResponse(
     var category: String = "",
     var price: Long = 0,
     var imageUrl: String = "",
-    var description: String = ""
+    var description: String = "",
+    var soldCount: Long = 0L
 ) {
     data class UserInfo(
         var id: String = "",

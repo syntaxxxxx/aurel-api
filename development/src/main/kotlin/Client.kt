@@ -1,11 +1,16 @@
 import com.google.gson.FieldNamingPolicy
 import io.ktor.client.*
+import io.ktor.client.call.*
 import io.ktor.client.engine.cio.*
 import io.ktor.client.plugins.*
 import io.ktor.client.request.*
+import io.ktor.client.request.forms.*
 import io.ktor.client.statement.*
+import io.ktor.client.utils.*
 import io.ktor.http.*
 import io.ktor.serialization.gson.*
+import org.apache.tika.Tika
+import org.apache.tika.mime.MimeTypes
 
 object Client {
     private val client = HttpClient(CIO) {
@@ -26,10 +31,15 @@ object Client {
         "https://docs.google.com/spreadsheets/d/e/2PACX-1vTORAfyMaFUH0Joyt0_GqMjr_b9OV5aB2w2BDHDXhjs-si5o228rjzxRIylL90LLuj7GPZ9f93uk1KM/pub?gid=0&single=true&output=csv"
     const val CSV_USER_SELLER =
         "https://docs.google.com/spreadsheets/d/e/2PACX-1vTORAfyMaFUH0Joyt0_GqMjr_b9OV5aB2w2BDHDXhjs-si5o228rjzxRIylL90LLuj7GPZ9f93uk1KM/pub?gid=955433307&single=true&output=csv"
+    const val CSV_PRODUCT =
+        "https://docs.google.com/spreadsheets/d/e/2PACX-1vTORAfyMaFUH0Joyt0_GqMjr_b9OV5aB2w2BDHDXhjs-si5o228rjzxRIylL90LLuj7GPZ9f93uk1KM/pub?gid=9630758&single=true&output=csv"
 
     private const val BASE_URL = "https://aurel-store.herokuapp.com"
     private const val REGISTER_CUSTOMER = "$BASE_URL/v1/user/customer/register"
     private const val REGISTER_SELLER = "$BASE_URL/v1/user/seller/register"
+
+    private const val LOGIN = "$BASE_URL/v1/user/login"
+    private const val ADD_PRODUCT = "$BASE_URL/v1/seller/product"
 
     suspend fun getCsv(csvUrl: String): String {
         println("getting....")
@@ -53,5 +63,47 @@ object Client {
         }
 
         return data.bodyAsText()
+    }
+
+    suspend fun getToken(user: Map<String, String>): String {
+        val data = client.post(LOGIN) {
+            contentType(ContentType.Application.Json)
+            setBody(user)
+        }
+
+        return data.bodyAsText()
+    }
+
+    suspend fun addProduct(product: Map<String, String>, token: String): String {
+        val imageArray = getImage(product["image_url"].orEmpty())
+        val fileName = product["file_name"].orEmpty()
+        val tika = Tika()
+        val mimeType = tika.detect(fileName)
+
+        val data = client.post(ADD_PRODUCT) {
+            header("Authorization", token)
+            val content = MultiPartFormDataContent(
+                formData {
+                    append("name", product["name"].orEmpty())
+                    append("stock", product["stock"].orEmpty())
+                    append("price", product["price"].orEmpty())
+                    append("category", product["category"].orEmpty())
+                    append("description", product["description"].orEmpty())
+                    append("sold_count", product["stock_count"].orEmpty())
+                    append("image", imageArray, Headers.build {
+                        append(HttpHeaders.ContentType, mimeType)
+                        append(HttpHeaders.ContentDisposition, "filename=$fileName")
+                    })
+                }
+            )
+            setBody(content)
+        }
+
+        return data.bodyAsText()
+    }
+
+    suspend fun getImage(imageUrl: String): ByteArray {
+        val data = client.get(imageUrl)
+        return data.body()
     }
 }
