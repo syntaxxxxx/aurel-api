@@ -17,6 +17,7 @@ data class Product(
     var imageUrl: String = "",
     var description: String = "",
     var userInfo: UserInfo = UserInfo(),
+    var soldCount: Long = 0L,
     var createdAt: String = "${Instant.now()}",
     var updatedAt: String = "${Instant.now()}"
 ) {

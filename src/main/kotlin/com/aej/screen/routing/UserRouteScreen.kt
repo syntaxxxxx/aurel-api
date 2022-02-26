@@ -27,7 +27,7 @@ object UserRouteScreen {
 
     suspend fun register(applicationCall: ApplicationCall, role: User.Role) = applicationCall.run {
         val userRequest = receive<UserRequest>()
-        val user = User.of(userRequest.username, userRequest.password, role)
+        val user = User.of(userRequest, role)
 
         val defaultImageBytes = DefaultImageUtils.createImage(user.username.first().toString())
         val defaultNames = "${user.username}-default.png"

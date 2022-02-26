@@ -1,1 +1,0 @@
-/Users/ruangguru/IdeaProjects/aurel-ktor/server-ktor/build/classes/kotlin/main/com/aej/ktor/Nganu.class

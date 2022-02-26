@@ -1,6 +1,7 @@
 package com.aej.repository.user
 
 import com.aej.MainException
+import com.aej.screen.request.UserRequest
 import com.aej.services.authentication.JwtConfig
 import com.aej.utils.AESUtils
 import com.aej.utils.randomString
@@ -25,12 +26,16 @@ data class User(
 ) {
 
     companion object {
-        fun of(username: String, password: String, role: Role): User {
+        fun of(userRequest: UserRequest, role: Role): User {
+            val username = userRequest.username
+            val password = userRequest.password
+            val fullName = userRequest.fullName
             val passwordHash = AESUtils.encrypt(password)
             val hashId = randomString()
             val user = User(
                 id = hashId,
                 username = username,
+                fullName = fullName,
                 role = role
             )
             user.password = passwordHash
