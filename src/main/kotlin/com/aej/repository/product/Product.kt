@@ -5,7 +5,10 @@ import com.aej.repository.user.User
 import com.aej.utils.isNol
 import com.aej.utils.randomString
 import io.ktor.http.*
+import java.math.RoundingMode
+import java.text.DecimalFormat
 import java.time.Instant
+import kotlin.math.roundToInt
 
 data class Product(
     var id: String = "",
@@ -52,8 +55,11 @@ data class Product(
     }
 
     fun calculateSoldPercent(): Product {
+        val decimalFormat = DecimalFormat("#.##").apply {
+            roundingMode = RoundingMode.CEILING
+        }
         val percent = (soldCount.toDouble() / stock.toDouble()) * 100
-        popularity = percent
+        popularity = decimalFormat.format(percent).toDouble()
         return this
     }
 
