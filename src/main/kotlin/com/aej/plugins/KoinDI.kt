@@ -1,6 +1,8 @@
 package com.aej.plugins
 
 import com.aej.container.ValueContainer
+import com.aej.repository.banner.BannerRepository
+import com.aej.repository.banner.BannerRepositoryImpl
 import com.aej.repository.cart.CartRepository
 import com.aej.repository.cart.CartRepositoryImpl
 import com.aej.repository.payment.PaymentRepository
@@ -57,6 +59,10 @@ fun Application.configureKoin() {
         single<TransactionRepository> { TransactionRepositoryImpl() }
     }
 
+    val bannerModule = module {
+        single<BannerRepository> { BannerRepositoryImpl() }
+    }
+
     val tikaModule = module {
         single { Tika() }
         single { MimeTypes.getDefaultMimeTypes() }
@@ -89,6 +95,7 @@ fun Application.configureKoin() {
             cartRepositoryModule,
             paymentRepositoryModule,
             transactionModule,
+            bannerModule,
             tikaModule,
             mongoServiceModule,
             httpClientModule

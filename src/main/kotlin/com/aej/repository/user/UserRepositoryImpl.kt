@@ -12,7 +12,7 @@ class UserRepositoryImpl : UserRepository {
     private val collection = database.getCollection<User>()
 
     override suspend fun createUser(user: User): Boolean {
-        val userExist = collection.findOne(User::id eq user.id)
+        val userExist = collection.findOne(User::username eq user.username)
         if (userExist != null) throw MainException("User already exist", HttpStatusCode.Conflict)
         collection.insertOne(user)
         return true

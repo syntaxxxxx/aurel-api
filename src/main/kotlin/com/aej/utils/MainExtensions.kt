@@ -1,6 +1,7 @@
 package com.aej.utils
 
 import com.aej.MainException
+import com.aej.repository.banner.Banner
 import com.aej.repository.cart.Cart
 import com.aej.repository.payment.Payment
 import com.aej.repository.payment.PaymentType
@@ -30,6 +31,7 @@ fun Cart?.orThrow(): Cart = this ?: throw MainException("Cart not found", HttpSt
 fun ImageFileData?.orThrow(): ImageFileData = this ?: throw MainException("Image not found", HttpStatusCode.BadGateway)
 fun Transaction?.orThrow(): Transaction = this ?: throw MainException("Image not found", HttpStatusCode.BadGateway)
 fun Payment?.orThrow(): Payment = this ?: throw MainException("Payment not found", HttpStatusCode.BadGateway)
+fun Banner?.orThrow(): Banner = this ?: throw MainException("Banner not found", HttpStatusCode.BadGateway)
 
 fun Double.fixSum(double: Double): Double {
     return (this.toFloat() * double.toFloat()).toDouble()

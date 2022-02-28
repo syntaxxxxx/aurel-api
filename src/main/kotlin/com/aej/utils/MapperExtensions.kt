@@ -1,5 +1,6 @@
 package com.aej.utils
 
+import com.aej.repository.banner.Banner
 import com.aej.repository.cart.Cart
 import com.aej.repository.payment.Payment
 import com.aej.repository.product.Product
@@ -81,5 +82,11 @@ fun PaymentAvailableData.mapToResponse(): PaymentAvailableResponse {
         code = code,
         paymentType = paymentType.name,
         isActivated = isActivated
+    )
+}
+
+fun Banner.mapToResponse(): BannerResponse {
+    return BannerResponse(
+        id, name, headline, caption, imageUrl, sellerId, productId
     )
 }

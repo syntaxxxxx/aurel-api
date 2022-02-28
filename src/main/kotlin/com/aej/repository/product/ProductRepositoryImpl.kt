@@ -14,7 +14,7 @@ class ProductRepositoryImpl : ProductRepository {
     private val collection = database.getCollection<Product>("product")
 
     override suspend fun createProduct(product: Product): Boolean {
-        val productExist = collection.findOne(Product::id eq product.id)
+        val productExist = collection.findOne(Product::name eq product.name)
         if (productExist != null) throw MainException("Product already exist", HttpStatusCode.Conflict)
         collection.insertOne(product)
         return true

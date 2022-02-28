@@ -41,6 +41,7 @@ fun Application.configureRoutingV1() {
                         .hanaDocs("Get Product", 2) { getProduct() }
 
                     get("/category") { ProductRouteScreen.getAllCategory(call) }
+                    get("/banner") { BannerRouteScreen.getAllBanner(call) }
                 }
 
                 basicAuth {
@@ -74,6 +75,7 @@ fun Application.configureRoutingV1() {
                         post { ProductRouteScreen.createProductFormData(call) }
                             .hanaDocs("Add product (seller)", 2) { addProductSeller() }
 
+                        post("/banner") { BannerRouteScreen.createBanner(call) }
                         get("/category") { ProductRouteScreen.getAllCategory(call) }
                     }
                 }
