@@ -52,7 +52,7 @@ data class Product(
     }
 
     fun withUserInfo(user: User): Product {
-        userInfo = UserInfo(user.id, user.username)
+        userInfo = UserInfo(user.id, user.username, user.city)
         return this
     }
 
