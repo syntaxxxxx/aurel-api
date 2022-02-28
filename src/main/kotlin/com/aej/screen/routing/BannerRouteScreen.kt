@@ -10,6 +10,7 @@ import com.aej.services.image.ImageStorageServices
 import com.aej.utils.mapToResponse
 import com.aej.utils.orNol
 import com.aej.utils.orRandom
+import com.aej.utils.randomString
 import io.ktor.http.*
 import io.ktor.http.content.*
 import io.ktor.server.application.*
@@ -23,7 +24,7 @@ object BannerRouteScreen {
 
     suspend fun createBanner(applicationCall: ApplicationCall) = applicationCall.run {
         val user = User.fromToken(request, userRepository, User.Role.SELLER)
-        val banner = Banner(sellerId = user.id)
+        val banner = Banner(id = randomString(), sellerId = user.id)
 
         receiveMultipart().readAllParts().onEach { part ->
             when (part) {
