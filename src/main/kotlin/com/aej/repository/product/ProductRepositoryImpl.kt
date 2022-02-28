@@ -196,7 +196,7 @@ class ProductRepositoryImpl : ProductRepository {
     }
 
     private fun bsonSortDate() = ascending(Product::updatedAt)
-    private fun bsonSortPopular() = descending(Product::soldCount)
+    private fun bsonSortPopular() = descending(Product::soldPercent)
     private fun bsonSortPrice() = ascending(Product::price)
 
 }

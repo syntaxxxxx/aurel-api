@@ -18,6 +18,7 @@ data class Product(
     var description: String = "",
     var userInfo: UserInfo = UserInfo(),
     var soldCount: Long = 0L,
+    var soldPercent: Double = 0.0,
     var createdAt: String = "${Instant.now()}",
     var updatedAt: String = "${Instant.now()}"
 ) {
@@ -29,7 +30,7 @@ data class Product(
     companion object {
         fun of(name: String, owner: String, stock: Int, price: Long, category: String): Product {
             val hashId = randomString()
-            return Product(hashId, name, owner, stock, price, category)
+            return Product(hashId, name, owner, stock, price, category).apply { calculateSoldPercent() }
         }
     }
 
@@ -54,6 +55,11 @@ data class Product(
     fun withUserInfo(user: User): Product {
         userInfo = UserInfo(user.id, user.username, user.city)
         return this
+    }
+
+    fun calculateSoldPercent() {
+        val percent = (soldCount.toDouble() / stock.toDouble()) * 100
+        soldPercent = percent
     }
 
     private fun throwEmptyParam(param: String) {
