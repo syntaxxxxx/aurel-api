@@ -54,7 +54,6 @@ object ProductRouteScreen {
 
     suspend fun getProductWithParameter(applicationCall: ApplicationCall) = applicationCall.run {
         when {
-
             parameters.contains("product_id") -> getSingleProduct(this)
             parameters.contains("key") -> searchProduct(this)
             else -> getAllProduct(this)

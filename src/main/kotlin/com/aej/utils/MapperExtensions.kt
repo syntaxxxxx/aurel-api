@@ -15,6 +15,7 @@ fun User.mapToResponse(): UserResponse {
         role = role,
         imageUrl = imageUrl,
         fullName = fullName,
+        city = city,
         simpleAddress = simpleAddress
     )
 }
@@ -29,7 +30,7 @@ fun Product.mapToResponse(): ProductResponse {
         category = category,
         description = description,
         soldCount = soldCount,
-        seller = ProductResponse.UserInfo(userInfo.id, userInfo.name)
+        seller = ProductResponse.UserInfo(userInfo.id, userInfo.name, userInfo.city)
     )
 }
 

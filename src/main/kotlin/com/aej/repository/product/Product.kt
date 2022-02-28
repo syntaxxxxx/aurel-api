@@ -23,7 +23,8 @@ data class Product(
 ) {
     data class UserInfo(
         var id: String = "",
-        var name: String = ""
+        var name: String = "",
+        var city: String = ""
     )
     companion object {
         fun of(name: String, owner: String, stock: Int, price: Long, category: String): Product {

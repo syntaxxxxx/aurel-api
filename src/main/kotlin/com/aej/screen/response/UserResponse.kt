@@ -9,5 +9,6 @@ class UserResponse(
     var role: User.Role = User.Role.CUSTOMER,
     var imageUrl: String = "",
     var fullName: String = "",
+    var city: String = "",
     var simpleAddress: String = ""
 )

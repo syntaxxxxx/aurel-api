@@ -34,7 +34,8 @@ fun readUserCsv(csv: String): List<Map<String, String>> {
         mapOf(
             "username" to it[0],
             "password" to it[1],
-            "full_name" to it[2]
+            "full_name" to it[2],
+            "city" to it[3]
         )
     }.toMutableList().apply {
         removeFirst()

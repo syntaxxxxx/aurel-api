@@ -13,6 +13,7 @@ data class ProductResponse(
 ) {
     data class UserInfo(
         var id: String = "",
-        var name: String = ""
+        var name: String = "",
+        var city: String = ""
     )
 }

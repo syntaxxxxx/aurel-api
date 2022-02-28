@@ -18,6 +18,7 @@ data class User(
     var role: Role = Role.CUSTOMER,
     var imageUrl: String = "",
     var fullName: String = "",
+    var city: String = "",
     var simpleAddress: String = "",
     var fcmToken: String = "",
     var fcmServerKey: String = "",
@@ -30,13 +31,16 @@ data class User(
             val username = userRequest.username
             val password = userRequest.password
             val fullName = userRequest.fullName
+            val city = userRequest.city
             val passwordHash = AESUtils.encrypt(password)
             val hashId = randomString()
+
             val user = User(
                 id = hashId,
                 username = username,
                 fullName = fullName,
-                role = role
+                role = role,
+                city = city
             )
             user.password = passwordHash
             return user
