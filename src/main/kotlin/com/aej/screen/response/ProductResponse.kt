@@ -9,7 +9,8 @@ data class ProductResponse(
     var price: Long = 0,
     var imageUrl: String = "",
     var description: String = "",
-    var soldCount: Long = 0L
+    var soldCount: Long = 0L,
+    var popularity: Double = 0.0
 ) {
     data class UserInfo(
         var id: String = "",

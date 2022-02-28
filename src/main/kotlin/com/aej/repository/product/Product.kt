@@ -18,7 +18,7 @@ data class Product(
     var description: String = "",
     var userInfo: UserInfo = UserInfo(),
     var soldCount: Long = 0L,
-    var soldPercent: Double = 0.0,
+    var popularity: Double = 0.0,
     var createdAt: String = "${Instant.now()}",
     var updatedAt: String = "${Instant.now()}"
 ) {
@@ -27,12 +27,6 @@ data class Product(
         var name: String = "",
         var city: String = ""
     )
-    companion object {
-        fun of(name: String, owner: String, stock: Int, price: Long, category: String): Product {
-            val hashId = randomString()
-            return Product(hashId, name, owner, stock, price, category).apply { calculateSoldPercent() }
-        }
-    }
 
     fun validateQuantity(): Product {
         if (stock < 0) stock = 0
@@ -57,9 +51,10 @@ data class Product(
         return this
     }
 
-    fun calculateSoldPercent() {
+    fun calculateSoldPercent(): Product {
         val percent = (soldCount.toDouble() / stock.toDouble()) * 100
-        soldPercent = percent
+        popularity = percent
+        return this
     }
 
     private fun throwEmptyParam(param: String) {

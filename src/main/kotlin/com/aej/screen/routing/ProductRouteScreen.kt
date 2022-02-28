@@ -47,7 +47,8 @@ object ProductRouteScreen {
             }
         }
 
-        productRepository.createProduct(product.validateQuantity().validateItem())
+        val productComplete = product.validateQuantity().validateItem().calculateSoldPercent()
+        productRepository.createProduct(productComplete)
         val productData = productRepository.getProduct(product.id).mapToResponse()
         respond(MainResponse.bindToResponse(productData, "Add product"))
     }
