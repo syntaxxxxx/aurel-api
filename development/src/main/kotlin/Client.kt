@@ -122,6 +122,7 @@ object Client {
     }
 
     suspend fun addCategory(category: Map<String, String>): String {
+        println("awr -> \n$category")
         val tika = Tika()
 
         val name = category["name"].orEmpty()
@@ -130,7 +131,6 @@ object Client {
 
         val filenameCover = category["filename_cover"]
         val filenameIcon = category["filename_icon"]
-
 
         val mimeTypeCover = tika.detect(filenameCover)
         val mimeTypeIcon = tika.detect(filenameIcon)
@@ -156,6 +156,7 @@ object Client {
     }
 
     suspend fun getImage(imageUrl: String): ByteArray {
+        println("imageurl --> $imageUrl")
         val data = client.get(imageUrl)
         return data.body()
     }

@@ -22,7 +22,7 @@ object CategoryRouteScreen {
     }
 
     suspend fun createCategory(applicationCall: ApplicationCall) = applicationCall.run {
-        val category = Category()
+        val category = Category(id = randomString())
         receiveMultipart().readAllParts().onEach { part ->
             when (part) {
                 is PartData.FormItem -> {

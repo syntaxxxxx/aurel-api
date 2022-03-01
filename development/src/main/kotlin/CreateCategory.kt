@@ -22,5 +22,5 @@ private fun readCategoryCsv(csv: String): List<Map<String, String>> {
         )
     }.toMutableList().apply {
         removeFirst()
-    }
+    }.filterNot { it.containsValue("") }
 }
