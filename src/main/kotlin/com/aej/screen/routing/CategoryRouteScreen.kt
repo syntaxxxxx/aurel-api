@@ -42,5 +42,10 @@ object CategoryRouteScreen {
                 else -> {}
             }
         }
+
+        categoryRepository.createCategory(category)
+        val categories = categoryRepository.getCategory().map { it.mapToResponse() }
+        respond(MainResponse.bindToResponse(categories, "Get available category"))
+
     }
 }
