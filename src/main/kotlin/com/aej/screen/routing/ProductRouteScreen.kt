@@ -77,7 +77,7 @@ object ProductRouteScreen {
         val page = parameters["page"]?.toIntOrNull() ?: 1
         val limit = parameters["per_page"]?.toIntOrNull() ?: ProductRepository.PER_PAGE
         val sellerId = parameters["seller_id"].orEmpty().replace(" ", "+")
-        val category = parameters["category"].orEmpty()
+        val category = parameters["category_id"].orEmpty()
         val sort = parameters["sort"].orEmpty().toProductSort()
 
         val products = productRepository.getProductPage(page, limit, sellerId, category, sort).map { it.mapToResponse() }

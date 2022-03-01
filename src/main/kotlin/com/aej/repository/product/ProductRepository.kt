@@ -7,13 +7,12 @@ interface ProductRepository {
     suspend fun getAllProduct(): List<Product>
     suspend fun searchProduct(key: String, page: Int, limit: Int, ownerId: String, sort: ProductSort = ProductSort.DATE): List<Product>
     suspend fun getSizeCount(key: String = ""): Long
-    suspend fun getProductPage(page: Int, limit: Int, ownerId: String, category: String, sort: ProductSort = ProductSort.DATE): List<Product>
+    suspend fun getProductPage(page: Int, limit: Int, ownerId: String, categoryId: String, sort: ProductSort = ProductSort.DATE): List<Product>
     suspend fun updateProduct(product: Product): Product
     suspend fun incrementProduct(id: String, quantity: Int): Product
     suspend fun decrementProduct(id: String, quantity: Int): Product
     suspend fun deleteProduct(id: String): Boolean
-    suspend fun getCategory(): List<String>
-    suspend fun getProductInCategory(category: String): List<Product>
+    suspend fun getProductInCategory(categoryId: String): List<Product>
     suspend fun fixProduct()
 
     companion object {

@@ -2,6 +2,8 @@ package com.aej.repository.product
 
 import com.aej.container.KoinContainer
 import com.aej.MainException
+import com.aej.utils.isEmpty
+import com.aej.utils.isNotEmpty
 import com.aej.utils.orThrow
 import io.ktor.http.*
 import org.bson.conversions.Bson
@@ -12,6 +14,7 @@ class ProductRepositoryImpl : ProductRepository {
     private val client = KoinContainer.mongoCoroutineClient
     private val database = client.getDatabase("aurel-market")
     private val collection = database.getCollection<Product>("product")
+    private val categoryRepository = KoinContainer.categoryRepository
 
     override suspend fun createProduct(product: Product): Boolean {
         val productExist = collection.findOne(Product::name eq product.name)
@@ -87,11 +90,12 @@ class ProductRepositoryImpl : ProductRepository {
         page: Int,
         limit: Int,
         ownerId: String,
-        category: String,
+        categoryId: String,
         sort: ProductSort
     ): List<Product> {
         val offset = (page - 1) * limit
         val pipeline = listOf(getBsonBySort(sort), skip(offset), limit(limit))
+        val category = categoryRepository.getCategoryOrEmptyById(categoryId)
 
         val product = when {
             ownerId.isNotEmpty() && category.isEmpty() -> {
@@ -147,11 +151,8 @@ class ProductRepositoryImpl : ProductRepository {
         return true
     }
 
-    override suspend fun getCategory(): List<String> {
-        return collection.find().toList().map { it.category }.distinct()
-    }
-
-    override suspend fun getProductInCategory(category: String): List<Product> {
+    override suspend fun getProductInCategory(categoryId: String): List<Product> {
+        val category = categoryRepository.getCategoryOrEmptyById(categoryId)
         return collection.find(Product::category eq category).toList()
     }
 

@@ -1,6 +1,7 @@
 package com.aej.repository.category
 
 import com.aej.container.KoinContainer
+import com.aej.utils.orEmpty
 import com.aej.utils.orThrow
 import org.litote.kmongo.eq
 
@@ -20,5 +21,9 @@ class CategoryRepositoryImpl : CategoryRepository {
 
     override suspend fun getCategoryById(id: String): Category {
         return collection.findOne(Category::id eq id).orThrow()
+    }
+
+    override suspend fun getCategoryOrEmptyById(id: String): Category {
+        return collection.findOne(Category::id eq id).orEmpty()
     }
 }

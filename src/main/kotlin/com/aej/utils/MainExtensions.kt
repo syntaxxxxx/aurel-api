@@ -34,6 +34,7 @@ fun Transaction?.orThrow(): Transaction = this ?: throw MainException("Image not
 fun Payment?.orThrow(): Payment = this ?: throw MainException("Payment not found", HttpStatusCode.BadGateway)
 fun Banner?.orThrow(): Banner = this ?: throw MainException("Banner not found", HttpStatusCode.BadGateway)
 fun Category?.orThrow(): Category = this ?: throw MainException("Category not found", HttpStatusCode.BadGateway)
+fun Category?.orEmpty(): Category = this ?: Category()
 
 fun Double.fixSum(double: Double): Double {
     return (this.toFloat() * double.toFloat()).toDouble()
@@ -62,3 +63,4 @@ fun String.removeInvoiceSuffix(): String = removeSuffix(Payment.Suffix.INVOICE)
 fun String.removeMerchantSuffix(): String = removeSuffix(Payment.Suffix.MERCHANT)
 
 fun Category.isEmpty() = this == Category()
+fun Category.isNotEmpty() = this != Category()
