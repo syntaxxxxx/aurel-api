@@ -40,7 +40,6 @@ fun Application.configureRoutingV1() {
                     get { ProductRouteScreen.getProductWithParameter(call) }
                         .hanaDocs("Get Product", 2) { getProduct() }
 
-                    get("/category") { ProductRouteScreen.getAllCategory(call) }
                     get("/banner") { BannerRouteScreen.getAllBanner(call) }
                 }
 
@@ -76,9 +75,14 @@ fun Application.configureRoutingV1() {
                             .hanaDocs("Add product (seller)", 2) { addProductSeller() }
 
                         post("/banner") { BannerRouteScreen.createBanner(call) }
-                        get("/category") { ProductRouteScreen.getAllCategory(call) }
                     }
                 }
+            }
+
+            /* CATEGORY */
+            route("/category") {
+                get { CategoryRouteScreen.getAllCategory(call) }
+                post { CategoryRouteScreen.createCategory(call) }
             }
         }
     }

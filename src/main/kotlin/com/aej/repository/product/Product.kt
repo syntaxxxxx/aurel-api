@@ -1,7 +1,9 @@
 package com.aej.repository.product
 
 import com.aej.MainException
+import com.aej.repository.category.Category
 import com.aej.repository.user.User
+import com.aej.utils.isEmpty
 import com.aej.utils.isNol
 import com.aej.utils.randomString
 import io.ktor.http.*
@@ -16,7 +18,7 @@ data class Product(
     var owner: String = "",
     var stock: Int = 0,
     var price: Long = 0,
-    var category: String = "",
+    var category: Category = Category(),
     var imageUrl: String = "",
     var description: String = "",
     var userInfo: UserInfo = UserInfo(),
@@ -43,8 +45,8 @@ data class Product(
             name.isEmpty() -> throwEmptyParam("name")
             stock.isNol() -> throwEmptyParam("stock")
             price.isNol() -> throwEmptyParam("price")
-            category.isEmpty() -> throwEmptyParam("category")
             description.isEmpty() -> throwEmptyParam("description")
+            category.isEmpty() -> throwEmptyParam("category")
         }
         return this
     }

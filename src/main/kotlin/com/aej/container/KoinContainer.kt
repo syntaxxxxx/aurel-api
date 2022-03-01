@@ -2,6 +2,7 @@ package com.aej.container
 
 import com.aej.repository.banner.BannerRepository
 import com.aej.repository.cart.CartRepository
+import com.aej.repository.category.CategoryRepository
 import com.aej.repository.payment.PaymentRepository
 import com.aej.repository.product.ProductRepository
 import com.aej.repository.transaction.TransactionRepository
@@ -25,6 +26,7 @@ object KoinContainer : KoinComponent {
     val transactionRepository: TransactionRepository by inject()
     val paymentRepository: PaymentRepository by inject()
     val bannerRepository: BannerRepository by inject()
+    val categoryRepository: CategoryRepository by inject()
 
     val tika: Tika by inject()
     val mimeTypes: MimeTypes by inject()

@@ -5,7 +5,7 @@ data class ProductResponse(
     var name: String = "",
     var seller: UserInfo = UserInfo(),
     var stock: Int = 0,
-    var category: String = "",
+    var category: CategoryResponse = CategoryResponse(),
     var price: Long = 0,
     var imageUrl: String = "",
     var description: String = "",

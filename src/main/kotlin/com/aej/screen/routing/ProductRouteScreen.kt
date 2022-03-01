@@ -1,6 +1,7 @@
 package com.aej.screen.routing
 
 import com.aej.container.KoinContainer
+import com.aej.repository.category.Category
 import com.aej.repository.product.Product
 import com.aej.repository.product.ProductRepository
 import com.aej.repository.product.toProductSort
@@ -11,6 +12,7 @@ import com.aej.services.image.ImageStorageServices
 import com.aej.utils.mapToResponse
 import com.aej.utils.orNol
 import com.aej.utils.orRandom
+import com.aej.utils.randomString
 import io.ktor.http.content.*
 import io.ktor.server.application.*
 import io.ktor.server.request.*
@@ -20,6 +22,7 @@ object ProductRouteScreen {
     private val valueContainer = KoinContainer.valueContainer
     private val userRepository = KoinContainer.userRepository
     private val productRepository = KoinContainer.productRepository
+    private val categoryRepository = KoinContainer.categoryRepository
 
     suspend fun createProductFormData(applicationCall: ApplicationCall) = applicationCall.run {
         val user = User.fromToken(request, userRepository, User.Role.SELLER)
@@ -31,9 +34,12 @@ object ProductRouteScreen {
                         "name" -> product.name = part.value
                         "stock" -> product.stock = part.value.toIntOrNull().orNol()
                         "price" -> product.price = part.value.toLongOrNull().orNol()
-                        "category" -> product.category = part.value
                         "description" -> product.description = part.value
                         "sold_count" -> product.soldCount = part.value.toLongOrNull().orNol()
+                        "category_id" -> {
+                            val category = categoryRepository.getCategoryById(part.value)
+                            product.category = category
+                        }
                     }
                 }
                 is PartData.FileItem -> {
@@ -101,10 +107,5 @@ object ProductRouteScreen {
             data = products
         )
         respond(MainResponse.bindToResponse(pagingData, "Get product"))
-    }
-
-    suspend fun getAllCategory(applicationCall: ApplicationCall) = applicationCall.run {
-        val categories = productRepository.getCategory()
-        respond(MainResponse.bindToResponse(categories, "Get available category"))
     }
 }

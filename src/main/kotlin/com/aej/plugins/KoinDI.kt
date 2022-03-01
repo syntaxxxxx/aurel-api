@@ -5,6 +5,8 @@ import com.aej.repository.banner.BannerRepository
 import com.aej.repository.banner.BannerRepositoryImpl
 import com.aej.repository.cart.CartRepository
 import com.aej.repository.cart.CartRepositoryImpl
+import com.aej.repository.category.CategoryRepository
+import com.aej.repository.category.CategoryRepositoryImpl
 import com.aej.repository.payment.PaymentRepository
 import com.aej.repository.payment.PaymentRepositoryImpl
 import com.aej.repository.product.ProductRepository
@@ -72,6 +74,10 @@ fun Application.configureKoin() {
         single { KMongo.createClient(dbUrl).coroutine }
     }
 
+    val categoryModule = module {
+        single<CategoryRepository> { CategoryRepositoryImpl() }
+    }
+
     val httpClientModule = module {
         single {
             HttpClient(CIO) {
@@ -98,7 +104,8 @@ fun Application.configureKoin() {
             bannerModule,
             tikaModule,
             mongoServiceModule,
-            httpClientModule
+            httpClientModule,
+            categoryModule
         )
     }
 }

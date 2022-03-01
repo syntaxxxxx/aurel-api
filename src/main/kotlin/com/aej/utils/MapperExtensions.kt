@@ -2,6 +2,7 @@ package com.aej.utils
 
 import com.aej.repository.banner.Banner
 import com.aej.repository.cart.Cart
+import com.aej.repository.category.Category
 import com.aej.repository.payment.Payment
 import com.aej.repository.product.Product
 import com.aej.repository.transaction.Transaction
@@ -21,6 +22,10 @@ fun User.mapToResponse(): UserResponse {
     )
 }
 
+fun Category.mapToResponse(): CategoryResponse {
+    return CategoryResponse(id, name, imageCover, imageIcon)
+}
+
 fun Product.mapToResponse(): ProductResponse {
     return ProductResponse(
         id = id,
@@ -28,7 +33,7 @@ fun Product.mapToResponse(): ProductResponse {
         stock = stock,
         price = price,
         imageUrl = imageUrl,
-        category = category,
+        category = category.mapToResponse(),
         description = description,
         soldCount = soldCount,
         popularity = popularity,
