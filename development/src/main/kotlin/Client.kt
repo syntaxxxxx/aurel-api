@@ -8,11 +8,9 @@ import io.ktor.client.plugins.*
 import io.ktor.client.request.*
 import io.ktor.client.request.forms.*
 import io.ktor.client.statement.*
-import io.ktor.client.utils.*
 import io.ktor.http.*
 import io.ktor.serialization.gson.*
 import org.apache.tika.Tika
-import org.apache.tika.mime.MimeTypes
 
 object Client {
     private val client = HttpClient(CIO) {
@@ -31,6 +29,7 @@ object Client {
 
     const val CSV_USER_CUSTOMER =
         "https://docs.google.com/spreadsheets/d/e/2PACX-1vTORAfyMaFUH0Joyt0_GqMjr_b9OV5aB2w2BDHDXhjs-si5o228rjzxRIylL90LLuj7GPZ9f93uk1KM/pub?gid=0&single=true&output=csv"
+
     const val CSV_USER_SELLER =
         "https://docs.google.com/spreadsheets/d/e/2PACX-1vTORAfyMaFUH0Joyt0_GqMjr_b9OV5aB2w2BDHDXhjs-si5o228rjzxRIylL90LLuj7GPZ9f93uk1KM/pub?gid=955433307&single=true&output=csv"
 
@@ -43,6 +42,9 @@ object Client {
     const val CSV_PRODUCT_3 =
         "https://docs.google.com/spreadsheets/d/e/2PACX-1vTORAfyMaFUH0Joyt0_GqMjr_b9OV5aB2w2BDHDXhjs-si5o228rjzxRIylL90LLuj7GPZ9f93uk1KM/pub?gid=1045805880&single=true&output=csv"
 
+    const val CSV_CATEGORY =
+        "https://docs.google.com/spreadsheets/d/e/2PACX-1vTORAfyMaFUH0Joyt0_GqMjr_b9OV5aB2w2BDHDXhjs-si5o228rjzxRIylL90LLuj7GPZ9f93uk1KM/pub?gid=2043188301&single=true&output=csv"
+
     private const val BASE_URL = "https://aurel-store.herokuapp.com"
     private const val PING = "$BASE_URL/ping"
     private const val REGISTER_CUSTOMER = "$BASE_URL/v1/user/customer/register"
@@ -50,6 +52,7 @@ object Client {
 
     private const val LOGIN = "$BASE_URL/v1/user/login"
     private const val ADD_PRODUCT = "$BASE_URL/v1/seller/product"
+    private const val ADD_CATEGORY = "$BASE_URL/v1/category"
 
     suspend fun ping() {
         client.get(PING)
@@ -91,7 +94,7 @@ object Client {
     }
 
     suspend fun addProduct(product: Map<String, String>, token: String): String {
-        val imageArray = getImage(product["image_url"].orEmpty())
+        val image = getImage(product["image_url"].orEmpty())
         val fileName = product["file_name"].orEmpty()
         val tika = Tika()
         val mimeType = tika.detect(fileName)
@@ -106,9 +109,43 @@ object Client {
                     append("category", product["category"].orEmpty())
                     append("description", product["description"].orEmpty())
                     append("sold_count", product["sold_count"].orEmpty())
-                    append("image", imageArray, Headers.build {
+                    append("image", image, Headers.build {
                         append(HttpHeaders.ContentType, mimeType)
                         append(HttpHeaders.ContentDisposition, "filename=$fileName")
+                    })
+                }
+            )
+            setBody(content)
+        }
+
+        return data.bodyAsText()
+    }
+
+    suspend fun addCategory(category: Map<String, String>): String {
+        val tika = Tika()
+
+        val name = category["name"].orEmpty()
+        val imageCover = getImage(category["image_cover"].orEmpty())
+        val imageIcon = getImage(category["image_icon"].orEmpty())
+
+        val filenameCover = category["filename_cover"]
+        val filenameIcon = category["filename_icon"]
+
+
+        val mimeTypeCover = tika.detect(filenameCover)
+        val mimeTypeIcon = tika.detect(filenameIcon)
+
+        val data = client.post(ADD_CATEGORY) {
+            val content = MultiPartFormDataContent(
+                formData {
+                    append("name", name)
+                    append("image_cover", imageCover, Headers.build {
+                        append(HttpHeaders.ContentType, mimeTypeCover)
+                        append(HttpHeaders.ContentDisposition, "filename=$filenameCover")
+                    })
+                    append("image_icon", imageIcon, Headers.build {
+                        append(HttpHeaders.ContentType, mimeTypeIcon)
+                        append(HttpHeaders.ContentDisposition, "filename=$filenameIcon")
                     })
                 }
             )
