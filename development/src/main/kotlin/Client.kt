@@ -104,9 +104,9 @@ object Client {
             val content = MultiPartFormDataContent(
                 formData {
                     append("name", product["name"].orEmpty())
-                    append("stock", product["stock"].orEmpty())
                     append("price", product["price"].orEmpty())
-                    append("category", product["category"].orEmpty())
+                    append("stock", product["stock"].orEmpty())
+                    append("category_id", product["category"].orEmpty())
                     append("description", product["description"].orEmpty())
                     append("sold_count", product["sold_count"].orEmpty())
                     append("image", image, Headers.build {

@@ -27,7 +27,7 @@ fun readProductCsv(csv: String): List<Map<String, String>> {
             "name" to it[0],
             "stock" to it[1],
             "price" to it[2],
-            "category_id" to it[3],
+            "category" to it[3],
             "description" to it[4],
             "image_url" to it[5],
             "sold_count" to it[6],
