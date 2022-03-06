@@ -2,6 +2,7 @@ package com.aej.repository.product
 
 import com.aej.container.KoinContainer
 import com.aej.MainException
+import com.aej.repository.category.Category
 import com.aej.utils.isEmpty
 import com.aej.utils.isNotEmpty
 import com.aej.utils.orThrow
@@ -9,6 +10,7 @@ import io.ktor.http.*
 import org.bson.conversions.Bson
 import org.litote.kmongo.*
 import org.litote.kmongo.coroutine.CoroutineFindPublisher
+import org.litote.kmongo.util.KMongoUtil
 
 class ProductRepositoryImpl : ProductRepository {
     private val client = KoinContainer.mongoCoroutineClient
@@ -27,8 +29,10 @@ class ProductRepositoryImpl : ProductRepository {
         return collection.findOne(Product::id eq id).orThrow()
     }
 
-    override suspend fun getProductByOwner(ownerId: String): List<Product> {
-        return collection.find(Product::owner eq ownerId).toList()
+    override suspend fun getProductByOwner(ownerId: String): Pair<List<Product>, Long> {
+        val product = collection.find(Product::owner eq ownerId).toList()
+        val count = product.count().toLong()
+        return Pair(product, count)
     }
 
     override suspend fun getAllProduct(): List<Product> {
@@ -40,37 +44,42 @@ class ProductRepositoryImpl : ProductRepository {
         page: Int,
         limit: Int,
         ownerId: String,
+        category: Category,
         sort: ProductSort
-    ): List<Product> {
+    ): Pair<List<Product>, Long> {
         val offset = (page - 1) * limit
-        val pipeline = listOf(getBsonBySort(sort), skip(offset), limit(limit))
 
-        val product = when {
-            ownerId.isNotEmpty() && key.isEmpty() -> {
-                collection.find(Product::name eq ownerId)
-                    .manageSort(sort)
-                    .skip(offset)
-                    .limit(limit)
-                    .toList()
-            }
+        val product: Pair<List<Product>, Long> = when {
             key.isNotEmpty() && ownerId.isEmpty() -> {
-                collection.find(Product::name regex getRegexOfKey(key))
+                val filter = filterWithCategory(category, bsonOf(nameRegexFilterOf(key)))
+                val product = collection.find(filter)
                     .manageSort(sort)
                     .skip(offset)
                     .limit(limit)
                     .toList()
+                val count = collection.countDocuments(filter)
+
+                Pair(product, count)
             }
             ownerId.isNotEmpty() && key.isNotEmpty() -> {
-                collection.find()
-                    .filter(Product::name regex getRegexOfKey(key))
-                    .filter(Product::owner eq ownerId)
+                val filter = filterWithCategory(category, Product::owner eq ownerId)
+                val product = collection.find(filter)
                     .manageSort(sort)
                     .skip(offset)
                     .limit(limit)
                     .toList()
+
+                val count = collection.countDocuments(filter)
+                Pair(product, count)
             }
             else -> {
-                collection.aggregate<Product>(pipeline).toList()
+                val product = collection.find(nameRegexFilterOf(key))
+                    .manageSort(sort)
+                    .skip(offset)
+                    .limit(limit)
+                    .toList()
+                val count = collection.countDocuments(nameRegexFilterOf(key))
+                Pair(product, count)
             }
         }
 
@@ -79,7 +88,7 @@ class ProductRepositoryImpl : ProductRepository {
 
     override suspend fun getSizeCount(key: String): Long {
         val count = if (key.isNotEmpty()) {
-            collection.countDocuments(Product::name regex getRegexOfKey(key))
+            collection.countDocuments(Product::name regex nameRegexFilterOf(key))
         } else {
             collection.countDocuments()
         }
@@ -92,37 +101,58 @@ class ProductRepositoryImpl : ProductRepository {
         ownerId: String,
         categoryId: String,
         sort: ProductSort
-    ): List<Product> {
+    ): Pair<List<Product>, Long> {
         val offset = (page - 1) * limit
-        val pipeline = listOf(getBsonBySort(sort), skip(offset), limit(limit))
         val category = categoryRepository.getCategoryOrEmptyById(categoryId)
 
-        val product = when {
+        val product: Pair<List<Product>, Long> = when {
             ownerId.isNotEmpty() && category.isEmpty() -> {
-                collection.find(Product::owner eq ownerId)
+                val filter = and(
+                    Product::owner eq ownerId
+                )
+
+                val product = collection.find(filter)
                     .manageSort(sort)
-                    .skip(offset)
-                    .limit(limit)
                     .toList()
+                val count = collection.countDocuments(filter)
+                Pair(product, count)
             }
             category.isNotEmpty() && ownerId.isEmpty() -> {
-                collection.find(Product::category eq category)
+                val filter = and(
+                    Product::category eq category
+                )
+
+                val product = collection.find(filter)
                     .manageSort(sort)
                     .skip(offset)
                     .limit(limit)
                     .toList()
+                val count = collection.countDocuments(filter)
+
+                Pair(product, count)
             }
             ownerId.isNotEmpty() && category.isNotEmpty() -> {
-                collection.find()
-                    .filter(Product::category eq category)
-                    .filter(Product::owner eq ownerId)
+                val filter = and(
+                    Product::category eq category,
+                    Product::owner eq ownerId
+                )
+                val product = collection.find(filter)
                     .manageSort(sort)
                     .skip(offset)
                     .limit(limit)
                     .toList()
+                val count = collection.countDocuments(filter)
+                Pair(product, count)
             }
             else -> {
-                collection.aggregate<Product>(pipeline).toList()
+                val product = collection.find()
+                    .manageSort(sort)
+                    .skip(offset)
+                    .limit(limit)
+                    .toList()
+
+                val count = collection.countDocuments()
+                Pair(product, count)
             }
         }
 
@@ -151,9 +181,11 @@ class ProductRepositoryImpl : ProductRepository {
         return true
     }
 
-    override suspend fun getProductInCategory(categoryId: String): List<Product> {
+    override suspend fun getProductInCategory(categoryId: String): Pair<List<Product>, Long> {
         val category = categoryRepository.getCategoryOrEmptyById(categoryId)
-        return collection.find(Product::category eq category).toList()
+        val product = collection.find(Product::category eq category).toList()
+        val count = collection.countDocuments(Product::category eq category)
+        return Pair(product, count)
     }
 
     override suspend fun fixProduct() {
@@ -164,8 +196,8 @@ class ProductRepositoryImpl : ProductRepository {
         }
     }
 
-    private fun getRegexOfKey(key: String): Regex {
-        return "$key.*".toRegex()
+    private fun nameRegexFilterOf(key: String): String {
+        return "{ name : { '\$regex' : '$key.*', '\$options' : 'i' } }"
     }
 
     private fun CoroutineFindPublisher<Product>.manageSort(sort: ProductSort): CoroutineFindPublisher<Product> {
@@ -199,4 +231,14 @@ class ProductRepositoryImpl : ProductRepository {
     private fun bsonSortDate() = ascending(Product::updatedAt)
     private fun bsonSortPopular() = descending(Product::popularity)
     private fun bsonSortPrice() = ascending(Product::price)
+
+    private fun filterWithCategory(category: Category, vararg bson: Bson): Bson {
+        return if (category.id.isNotEmpty()) {
+            and(Product::category eq category, *bson)
+        } else {
+            and(*bson)
+        }
+    }
+
+    private fun bsonOf(regex: String): Bson = KMongoUtil.toBson(regex)
 }

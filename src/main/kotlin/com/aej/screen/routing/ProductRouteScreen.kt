@@ -80,8 +80,9 @@ object ProductRouteScreen {
         val category = parameters["category_id"].orEmpty()
         val sort = parameters["sort"].orEmpty().toProductSort()
 
-        val products = productRepository.getProductPage(page, limit, sellerId, category, sort).map { it.mapToResponse() }
-        val productsCount = productRepository.getSizeCount()
+        val result = productRepository.getProductPage(page, limit, sellerId, category, sort)
+        val products = result.first.map { it.mapToResponse() }
+        val productsCount = result.second
         val pagingData = PagingData(
             count = productsCount,
             countPerPage = limit.toLong(),
@@ -97,9 +98,13 @@ object ProductRouteScreen {
         val sellerId = parameters["seller_id"].orEmpty().replace(" ", "+")
         val key = parameters["key"].orEmpty()
         val sort = parameters["sort"].orEmpty().toProductSort()
+        val categoryId = parameters["category_id"].orEmpty()
 
-        val products = productRepository.searchProduct(key, page, limit, sellerId, sort).map { it.mapToResponse() }
-        val productsCount = productRepository.getSizeCount(key)
+        val category = categoryRepository.getCategoryOrEmptyById(categoryId)
+
+        val result = productRepository.searchProduct(key, page, limit, sellerId, category, sort)
+        val products = result.first.map { it.mapToResponse() }
+        val productsCount = result.second
         val pagingData = PagingData(
             count = productsCount,
             countPerPage = limit.toLong(),
