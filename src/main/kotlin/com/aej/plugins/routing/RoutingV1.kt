@@ -64,6 +64,8 @@ fun Application.configureRoutingV1() {
                         }
                     }
                 }
+
+                get("/seller/{id}") { UserRouteScreen.getSellerById(call) }
             }
 
             /* SELLER */

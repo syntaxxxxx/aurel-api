@@ -118,4 +118,14 @@ object UserRouteScreen {
         val userFromDb = userRepository.getUser(user.id)
         respond(MainResponse.bindToResponse(userFromDb.mapToResponse(), "Update image profile"))
     }
+
+    suspend fun getSellerById(applicationCall: ApplicationCall) = applicationCall.run {
+        val id = parameters["id"].orEmpty()
+        println("seller id ------> $id")
+        val user = userRepository.getUser(id)
+        if (user.role != User.Role.SELLER) throw MainException("Seller not found")
+
+        val userResponse = user.mapToResponse()
+        respond(MainResponse.bindToResponse(userResponse, "Get seller profile"))
+    }
 }
