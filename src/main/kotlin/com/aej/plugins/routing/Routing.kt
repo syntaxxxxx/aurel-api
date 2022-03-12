@@ -14,6 +14,8 @@ import com.aej.services.payment.simulation.request.SimulationPaidBody
 import com.aej.services.payment.va.callback.VaCreatedData
 import com.aej.services.payment.va.callback.VaPaidData
 import com.aej.utils.DefaultImageUtils
+import io.ktor.client.request.*
+import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
@@ -54,6 +56,11 @@ fun Application.configureRouting() {
                 setPort(port)
             }
             call.respond("Success")
+        }
+
+        get("/docs") {
+            val postmanUrl = "https://documenter.getpostman.com/view/3885530/UVsJv6iW"
+            call.respondRedirect(postmanUrl, true)
         }
 
         get("/default/{username}") {
