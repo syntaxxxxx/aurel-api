@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.cli.js.internal.main
+
 val ktor_version: String by project
 val kotlin_version: String by project
 val logback_version: String by project

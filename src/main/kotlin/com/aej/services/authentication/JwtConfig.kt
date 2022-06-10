@@ -12,7 +12,7 @@ class JwtConfig {
         private const val SECRET = "utsman"
         private const val ISSUER = "com.aej.aurel"
         private const val SUBJECT = "Authentication"
-        private const val VALIDITY = (36_000_00 * 24) * 7
+        private const val VALIDITY = (36_000_00 * 24) * 7 // seminggu
         const val NAME = "auth-jwt"
         const val ID = "id"
         const val HASH = "hash"

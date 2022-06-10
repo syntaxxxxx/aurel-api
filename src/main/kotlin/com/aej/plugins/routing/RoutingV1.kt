@@ -24,12 +24,11 @@ fun Application.configureRoutingV1() {
                 post("/login") { UserRouteScreen.login(call) }
                     .hanaDocs("Login", 1) { userLogin() }
 
-                put { UserRouteScreen.updateProfileUser(call) }
-                put("/image") { UserRouteScreen.updateImageProfile(call) }
-
                 basicAuth {
                     get { UserRouteScreen.getUser(call) }
+                    put { UserRouteScreen.updateProfileUser(call) }
                     post("/fcm") { UserRouteScreen.updateFcmToken(call) }
+                    put("/image") { UserRouteScreen.updateImageProfile(call) }
                 }
             }
 

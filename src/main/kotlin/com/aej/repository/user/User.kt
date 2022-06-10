@@ -50,10 +50,8 @@ data class User(
             val principal = applicationRequest.call.principal<JWTPrincipal>()
             val payload = principal?.payload
             val userId  = payload?.getClaim(JwtConfig.ID)?.asString().orEmpty()
-
             val user = userRepository.getUser(userId)
             if (role != null && role != user.role) throw MainException("User not allowed", HttpStatusCode.Forbidden)
-
             return user
         }
     }
