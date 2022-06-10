@@ -1,7 +1,6 @@
 package com.aej.screen.response
 
 import com.aej.repository.user.User
-import me.hana.docs.annotation.DocFieldDescription
 
 class UserResponse(
     var id: String = "",

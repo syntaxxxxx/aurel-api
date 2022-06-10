@@ -65,9 +65,6 @@ dependencies {
 
     // mongodb
     implementation("org.litote.kmongo:kmongo-coroutine:$kmongo_version")
-
-    // ktor doc
-    implementation("com.github.utsmannn:hana:$hana_version")
 }
 
 tasks {

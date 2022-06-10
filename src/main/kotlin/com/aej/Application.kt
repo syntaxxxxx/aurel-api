@@ -15,7 +15,6 @@ fun main() {
         configureKoin()
         configureSecurity()
         configureStatusPage()
-        configureDocumentation()
         configureRouting()
         configureRoutingV1()
         configureHTTP()

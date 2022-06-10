@@ -13,7 +13,6 @@ import com.aej.utils.mapToResponse
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.response.*
-import kotlinx.css.th
 
 object TransactionRouteScreen {
     private val userRepository = KoinContainer.userRepository
