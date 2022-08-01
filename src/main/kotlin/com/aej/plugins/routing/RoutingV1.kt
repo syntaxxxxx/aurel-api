@@ -3,12 +3,18 @@ package com.aej.plugins.routing
 import com.aej.repository.user.User
 import com.aej.screen.routing.*
 import io.ktor.server.application.*
+import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
 fun Application.configureRoutingV1() {
     routing {
 
         route("/v1") {
+            get("/docs") {
+                val postmanUrl = "https://www.postman.com/utsmannn/workspace/public-api/request/9461186-b406af65-f0b2-494f-9a92-d07dffeed98b"
+                call.respondRedirect(postmanUrl)
+            }
+
             route("/user") {
                 post("/customer/register") { UserRouteScreen.register(call, User.Role.CUSTOMER) }
 
